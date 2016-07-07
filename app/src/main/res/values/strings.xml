@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Location Alarm</string>
+    <string name="youHaveReached">You\'ve Reached</string>
+
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="title_activity_scrolling">ScrollingActivity</string>
+
+    <string name="tapToViewList">Tap to view the list</string>
+    <string name="noInternet">No Internet…</string>
+    <string name="unknownPlace">Unknown Place…</string>
+    <string name="alarmList">Alarm List</string>
+    <string name="tapToViewMap">Swipe down to view the map</string>
+    <string name="action_km">Kilometers</string>
+    <string name="action_mts">Meters</string>
+    <string name="kilometer">km</string>
+    <string name="meter">m</string>
+    <string name="noLocationAlarmsAreSet">No Location Alarms Are Set …</string>
+    <string name="action_ft">Feets</string>
+    <string name="action_mls">Miles</string>
+    <string name="miles">mi</string>
+    <string name="feet">ft</string>
+</resources>

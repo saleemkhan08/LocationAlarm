@@ -1,0 +1,28 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#eee"
+              android:orientation="vertical"
+    >
+
+    <LinearLayout
+        android:id="@+id/emptyList"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:visibility="gone"
+        >
+
+        <TextView
+            android:id="@+id/emptyListTextView"
+            style="@style/emptyList"
+            android:text="@string/noLocationAlarmsAreSet"
+            />
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/locationAlarmList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="10dp"/>
+
+</LinearLayout>
