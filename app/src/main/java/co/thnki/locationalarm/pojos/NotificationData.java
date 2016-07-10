@@ -15,7 +15,7 @@ public class NotificationData implements Parcelable
     public int action2IntentIcon;
 
     public String contentTitle;
-    public long notificationId;
+    public int notificationId;
     public String contentIntentTag;
     public boolean onGoing = false;
     public String largeIconUrl;
@@ -44,7 +44,7 @@ public class NotificationData implements Parcelable
         dest.writeString(this.action2IntentText);
         dest.writeInt(this.action2IntentIcon);
         dest.writeString(this.contentTitle);
-        dest.writeLong(this.notificationId);
+        dest.writeInt(this.notificationId);
         dest.writeString(this.contentIntentTag);
         dest.writeByte(onGoing ? (byte) 1 : (byte) 0);
         dest.writeString(this.largeIconUrl);

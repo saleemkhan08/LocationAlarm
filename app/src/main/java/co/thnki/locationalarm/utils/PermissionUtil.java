@@ -43,6 +43,7 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
     private static final int REQUEST_CODE_SDCARD_PERMISSION = 103;
     public static final String LOCATION_SETTINGS = "LOCATION_SETTINGS";
     public static final String REQUEST_NOT_TO_TURN_LOCATION_OFF = "requestNotToTurnLocationOff";
+    public static final String REQUEST_TO_UPDATE = "requestToUpdate";
     private static PermissionResultListener mPermissionResultListener;
     public static final String SDCARD_PERMISSION = "SDCARD_PERMISSION";
     private static GoogleApiClient mGoogleApiClient;
@@ -399,5 +400,6 @@ public class PermissionUtil extends AppCompatActivity implements ResultCallback<
         }
         return false;
     }
+
 
 }

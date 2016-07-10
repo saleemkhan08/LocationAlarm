@@ -19,4 +19,7 @@
     <string name="action_mls">Miles</string>
     <string name="miles">mi</string>
     <string name="feet">ft</string>
+    <string name="no_network_access">Please Check Your Internet Connectivity &amp; Try Again!</string>
+    <string name="internet_failure">No Internet!</string>
+    <string name="ad_unit_id">ca-app-pub-3940256099942544/1072772517</string>
 </resources>

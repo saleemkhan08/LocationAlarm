@@ -14,7 +14,7 @@ import co.thnki.locationalarm.LocationAlarmApp;
 public class WBDataBase
 {
     private SQLiteDatabase db;
-    public static final String DATABASE_NAME = "whistle_blower";
+    public static final String DATABASE_NAME = "locationAlarm";
 
     public WBDataBase()
     {
@@ -25,10 +25,12 @@ public class WBDataBase
     class DataBaseHelper extends SQLiteOpenHelper
     {
         String[] mTableSchema = {
-                LocationAlarmDao.TABLE_SCHEMA,
+                AccountsDao.TABLE_SCHEMA,
+                LocationAlarmDao.TABLE_SCHEMA
         };
         String[] mDropTable = {
-                LocationAlarmDao.TABLE_SCHEMA,
+                AccountsDao.TABLE_SCHEMA,
+                LocationAlarmDao.TABLE_SCHEMA
         };
 
         Context mContext;

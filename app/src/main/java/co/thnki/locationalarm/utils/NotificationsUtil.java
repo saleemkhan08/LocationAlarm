@@ -77,8 +77,9 @@ public class NotificationsUtil
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mAppContext);
         mBuilder.setContentTitle(data.contentTitle)
-                .setSmallIcon(R.mipmap.bullhorn_white)
+                .setSmallIcon(R.mipmap.location_alarm_white)
                 .setOngoing(data.onGoing)
+                .setAutoCancel(true)
                 .setContentText(data.contentText)
                 .setContentIntent(contentPendingIntent);
 
@@ -113,7 +114,7 @@ public class NotificationsUtil
             notificationDefault.defaults |= Notification.DEFAULT_SOUND; // Sound
             mBuilder.setDefaults(notificationDefault.defaults);
         }
-        mNotificationManager.notify(NotificationActionReceiver.NOTIFICATION_ID_LOCATION_ALARMS, mBuilder.build());
+        mNotificationManager.notify(data.notificationId, mBuilder.build());
     }
 
     private static Bitmap getCircleBitmapFromUrl(String photoUrl)
@@ -128,7 +129,7 @@ public class NotificationsUtil
             e.printStackTrace();
             Log.d(TAG, " Error : " + e.getMessage());
         }
-        return BitmapFactory.decodeResource(mAppContext.getResources(), R.mipmap.bullhorn_invert);
+        return BitmapFactory.decodeResource(mAppContext.getResources(), R.mipmap.location_alarm_notification);
     }
 
     private static class ShowNormalNotification extends AsyncTask<NotificationData, Void, Void>

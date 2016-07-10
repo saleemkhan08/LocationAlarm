@@ -2,6 +2,7 @@ package co.thnki.locationalarm;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDexApplication;
 import android.widget.Toast;
@@ -24,6 +25,10 @@ public class LocationAlarmApp extends MultiDexApplication
     public static void toast(String str)
     {
         Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
+    }
+    public static Typeface getTypeFace()
+    {
+        return Typeface.createFromAsset(context.getAssets(), "Gabriola.ttf");
     }
     public static Context getAppContext()
     {

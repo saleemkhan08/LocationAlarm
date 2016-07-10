@@ -3,21 +3,40 @@ package co.thnki.locationalarm;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Vibrator;
+import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
+import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.NativeExpressAdView;
+
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import co.thnki.locationalarm.pojos.LocationAlarm;
+import co.thnki.locationalarm.services.AlarmAudioService;
+import co.thnki.locationalarm.singletons.Otto;
 import co.thnki.locationalarm.view.RippleBackground;
 
 public class AlarmActivity extends AppCompatActivity
 {
+    @Bind(R.id.content)
     RippleBackground rippleBackground;
+
+    @Bind(R.id.nativeAdView)
+    NativeExpressAdView nativeAdView;
+
+    @Bind(R.id.card_view)
+    CardView nativeAdViewWrapper;
+
+    private PowerManager.WakeLock mWakeLock;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -25,16 +44,11 @@ public class AlarmActivity extends AppCompatActivity
         setContentView(R.layout.activity_alarm_acivity);
         ButterKnife.bind(this);
 
-//        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-//        isScreenOn = pm.isInteractive();
-//
-//        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-//        locked = km.inKeyguardRestrictedInputMode();
-
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON |
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK |
+                PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "AlarmActivity");
+        mWakeLock.acquire();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
         TextView message = (TextView) findViewById(R.id.message);
         TextView youHaveReached = (TextView) findViewById(R.id.youHaveReached);
@@ -46,23 +60,26 @@ public class AlarmActivity extends AppCompatActivity
 
         final LocationAlarm alarm = getIntent().getParcelableExtra(LocationAlarm.ALARM);
         message.setText(getAddressLines(alarm.address, 3));
-    }
 
-    private MediaPlayer mediaPlayer;
-    private Vibrator vibrator;
+        AdRequest request = new AdRequest.Builder().addTestDevice("51B143E236817102C0BC44F96EE8A5F7").build();
+        nativeAdView.loadAd(request);
+        nativeAdView.setAdListener(new AdListener()
+        {
+            @Override
+            public void onAdLoaded()
+            {
+                super.onAdLoaded();
+                Log.d("alarmAdapter", "onAdLoaded");
+                nativeAdViewWrapper.setVisibility(View.VISIBLE);
+            }
+        });
+    }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        mediaPlayer = MediaPlayer.create(this, R.raw.alarm);
-        mediaPlayer.start(); // no need to call prepare(); create() does that for you
-        mediaPlayer.setLooping(true);
-        rippleBackground = (RippleBackground) findViewById(R.id.content);
         rippleBackground.startRippleAnimation();
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        long[] pattern = {0, 200, 975};
-        vibrator.vibrate(pattern, 0);
     }
 
     @Override
@@ -75,10 +92,14 @@ public class AlarmActivity extends AppCompatActivity
     @OnClick(R.id.stopAlarm)
     public void stop()
     {
-        mediaPlayer.stop();
-        vibrator.cancel();
         rippleBackground.stopRippleAnimation();
         startActivity(new Intent(AlarmActivity.this, MainActivity.class));
+        Otto.post(AlarmAudioService.STOP_ALARM_AUDIO);
+        if (mWakeLock.isHeld())
+        {
+            mWakeLock.release();
+        }
+
         finish();
     }
 

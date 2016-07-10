@@ -2,66 +2,104 @@
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/alarm_bg"
     android:fitsSystemWindows="true"
     >
+
     <RelativeLayout
         android:layout_width="match_parent"
-        android:paddingRight="20dp"
-        android:paddingLeft="20dp"
-        android:background="@drawable/alarm_bg"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        >
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
             android:id="@+id/youHaveReached"
-            android:gravity="center"
-            android:paddingTop="70dp"
-            android:textColor="@color/white"
-            android:layout_marginTop="40dp"
-            android:layout_marginRight="30dp"
-            android:layout_marginLeft="30dp"
-            android:textSize="60sp"
-            android:layout_marginBottom="-30dp"
-            android:text="@string/youHaveReached"/>
-        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:id="@+id/message"
+            android:layout_marginBottom="-30dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="40dp"
             android:gravity="center"
-            android:paddingBottom="60dp"
-            android:textSize="40sp"
-            android:layout_centerHorizontal="true"
-            android:layout_below="@+id/youHaveReached"
-            android:text=" The Paradise!!"/>
+            android:text="@string/youHaveReached"
+            android:textColor="@color/white"
+            android:textSize="60sp"
+            android:textStyle="bold"/>
 
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/youHaveReached"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:paddingBottom="20dp"
+            android:text=" The Paradise!!"
+            android:textColor="@color/white"
+            android:textSize="40sp"/>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/card_view"
+            android:visibility="gone"
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/message"
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="12dp"
+            card_view:cardBackgroundColor="@android:color/transparent"
+            card_view:cardCornerRadius="4dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#fff"
+                android:padding="10dp">
+
+                <com.google.android.gms.ads.NativeExpressAdView
+                    android:id="@+id/nativeAdView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    ads:adSize="320x150"
+                    ads:adUnitId="@string/ad_unit_id">
+                </com.google.android.gms.ads.NativeExpressAdView>
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
     </RelativeLayout>
+
+
+
     <co.thnki.locationalarm.view.RippleBackground
+        android:id="@+id/content"
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/content"
         app:rb_color="@color/colorAccent"
+        app:rb_duration="1175"
         app:rb_radius="60dp"
         app:rb_rippleAmount="1"
-        app:rb_duration="1175"
         app:rb_scale="8">
+
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/stopAlarm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignEnd="@+id/multiple_actions"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
             android:layout_alignRight="@+id/multiple_actions"
-            app:fab_icon="@mipmap/bell_cross"
+            android:layout_centerHorizontal="true"
             android:layout_marginBottom="20dp"
+            app:fab_icon="@mipmap/bell_cross"
             fab:fab_colorNormal="@color/colorAccent"
             fab:fab_colorPressed="@color/colorAccentPressed"/>
     </co.thnki.locationalarm.view.RippleBackground>

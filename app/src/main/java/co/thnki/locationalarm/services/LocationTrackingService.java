@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -240,11 +241,19 @@ public class LocationTrackingService extends Service implements LocationListener
     {
         Log.d(TAG, "onLocationChanged");
         mCurrentLatLng = getLatLng(location);
-        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        final LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
         Otto.post(location);
         if (preferences.getBoolean(KEY_ALARM_SET, false))
         {
-            triggerAlarm(currentLatLng);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    triggerAlarm(currentLatLng);
+                }
+            },3000);
         }
         stopService();
     }
@@ -276,6 +285,10 @@ public class LocationTrackingService extends Service implements LocationListener
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.putExtra(LocationAlarm.ALARM, alarm);
                         startActivity(intent);
+
+                        Intent alarmAudioIntent = new Intent(this, AlarmAudioService.class);
+                        startService(alarmAudioIntent);
+
                         currentAlarm = false;
                         LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_OFF);
                     }

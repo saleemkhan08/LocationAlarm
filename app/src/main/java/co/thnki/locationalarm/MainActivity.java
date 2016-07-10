@@ -1,6 +1,7 @@
 package co.thnki.locationalarm;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
@@ -8,8 +9,10 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.Slide;
 import android.transition.TransitionManager;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -19,6 +22,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.squareup.otto.Subscribe;
 
 import butterknife.Bind;
 import butterknife.BindColor;
@@ -26,8 +30,13 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import co.thnki.locationalarm.fragments.LocationAlarmListFragment;
 import co.thnki.locationalarm.fragments.MapFragment;
+import co.thnki.locationalarm.pojos.LocationAlarm;
+import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.singletons.Otto;
+import co.thnki.locationalarm.utils.LocationUtil;
 import co.thnki.locationalarm.utils.PermissionUtil;
+
+import static co.thnki.locationalarm.singletons.Otto.register;
 
 public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOffsetChangedListener
 {
@@ -66,14 +75,25 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     @Bind(R.id.titleBar)
     RelativeLayout mTitleBar;
     private MapFragment mMapFragment;
-    private int mOffset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= 21)
+        {
+            //TransitionInflater inflater = TransitionInflater.from(LoginActivity.this);
+            //Transition transition = inflater.inflateTransition(R.transition.login_to_main_transition);
+            Slide slide = new Slide();
+            slide.setDuration(700);
+            slide.setSlideEdge(Gravity.RIGHT);
+            getWindow().setEnterTransition(slide);
+        }
         setContentView(R.layout.activity_main);
+
+
         ButterKnife.bind(this);
+        register(this);
         CoordinatorLayout.LayoutParams params =
                 (CoordinatorLayout.LayoutParams) mAppBarLayout.getLayoutParams();
         AppBarLayout.Behavior behavior = new AppBarLayout.Behavior();
@@ -172,6 +192,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
         }
     }
 
+
     @Override
     protected void onNewIntent(Intent intent)
     {
@@ -185,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
         Log.d(TAG, "verticalOffset : " + verticalOffset);
         if (Math.abs(verticalOffset) == 0)
         {
-            if(!isCollapsed)
+            if (!isCollapsed)
             {
                 Otto.post(MapFragment.DIALOG_DISMISS);
             }
@@ -202,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
         }
     }
 
+
     @OnClick(R.id.titleBar)
     public void scrollUp()
     {
@@ -215,5 +237,28 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
         }
     }
 
+    @Subscribe
+    public void onAlarmClicked(LocationAlarm action)
+    {
+        mAppBarLayout.setExpanded(true, true);
+        mMapFragment.gotoLatLng(LocationUtil.getLatLng(action.latitude, action.longitude), true);
+    }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        Otto.unregister(this);
+    }
+
+    @Subscribe
+    public void onInternetConnected(String action)
+    {
+        switch (action)
+        {
+            case InternetConnectivityListener.INTERNET_CONNECTED:
+                loadAd();
+                break;
+        }
+    }
 }

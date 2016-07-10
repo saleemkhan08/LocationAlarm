@@ -9,8 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.NativeExpressAdView;
 
 import java.util.List;
 
@@ -30,10 +35,20 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
     private AppCompatActivity mActivity;
     private LayoutInflater inflater;
     private List<LocationAlarm> mAlarmList;
-    public AlarmAdapter(AppCompatActivity activity, List<LocationAlarm> mAlarmList)
+
+    public AlarmAdapter(AppCompatActivity activity, List<LocationAlarm> alarmList)
     {
         mActivity = activity;
-        this.mAlarmList = mAlarmList;
+        mAlarmList = alarmList;
+        if (mAlarmList.size() == 0)
+        {
+            mAlarmList.add(0, null);
+        }
+        else
+        {
+            mAlarmList.add(1, null);
+        }
+
         inflater = LayoutInflater.from(mActivity);
     }
 
@@ -47,52 +62,86 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
     @Override
     public void onBindViewHolder(final PlaceViewHolder holder, final int position)
     {
+        Log.d("alarmAdapter", "onBindViewHolder : " + position);
         final LocationAlarm alarm = mAlarmList.get(position);
-        holder.alarmAddress.setText(getAddressLines(alarm.address, 3));
-
-        holder.range.setText(getRadiusText(alarm.radius));
-        if(alarm.status == LocationAlarm.ALARM_ON)
+        if (alarm == null)
         {
-            holder.cancelAlarm.setImageResource(R.mipmap.bell_cross_accent);
+            Log.d("alarmAdapter", "Loading ad");
+            holder.placeContent.setVisibility(View.GONE);
+            AdRequest request = new AdRequest.Builder().addTestDevice("51B143E236817102C0BC44F96EE8A5F7").build();
+            holder.nativeAdView.loadAd(request);
+            holder.nativeAdView.setAdListener(new AdListener()
+            {
+                @Override
+                public void onAdLoaded()
+                {
+                    super.onAdLoaded();
+                    Log.d("alarmAdapter", "onAdLoaded");
+                    holder.nativeAdViewWrapper.setVisibility(View.VISIBLE);
+                }
+            });
         }
         else
         {
-            holder.cancelAlarm.setImageResource(R.mipmap.bell_icon_accent);
+            Log.d("alarmAdapter", "Loading alarm");
+            holder.nativeAdViewWrapper.setVisibility(View.GONE);
+            holder.placeContent.setVisibility(View.VISIBLE);
+
+            holder.alarmAddress.setText(getAddressLines(alarm.address, 3));
+
+            holder.item.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View view)
+                {
+                    Otto.post(alarm);
+                }
+            });
+
+            holder.range.setText(getRadiusText(alarm.radius));
+            if (alarm.status == LocationAlarm.ALARM_ON)
+            {
+                holder.cancelAlarm.setImageResource(R.mipmap.bell_cross_accent);
+            }
+            else
+            {
+                holder.cancelAlarm.setImageResource(R.mipmap.bell_icon_accent);
+            }
+
+            holder.cancelAlarm.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    int status = LocationAlarmDao.getAlarm(alarm.address).status;
+                    if (status == LocationAlarm.ALARM_ON)
+                    {
+                        setAlarm(alarm, false);
+                        holder.cancelAlarm.setImageResource(R.mipmap.bell_icon_accent);
+                    }
+                    else
+                    {
+                        setAlarm(alarm, true);
+                        holder.cancelAlarm.setImageResource(R.mipmap.bell_cross_accent);
+                    }
+                }
+            });
+
+            holder.deleteAlarm.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    LocationAlarmDao.delete(alarm.address);
+                    removeAt(position);
+                }
+            });
         }
-
-        holder.cancelAlarm.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                int status = LocationAlarmDao.getAlarm(alarm.address).status;
-                if (status == LocationAlarm.ALARM_ON)
-                {
-                    setAlarm(alarm, false);
-                    holder.cancelAlarm.setImageResource(R.mipmap.bell_icon_accent);
-                }
-                else
-                {
-                    setAlarm(alarm, true);
-                    holder.cancelAlarm.setImageResource(R.mipmap.bell_cross_accent);
-                }
-            }
-        });
-
-        holder.deleteAlarm.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                LocationAlarmDao.delete(alarm.address);
-                removeAt(position);
-            }
-        });
     }
 
     private void setAlarm(LocationAlarm alarm, boolean isSet)
     {
-        if(isSet)
+        if (isSet)
         {
             Log.d("FlowLogs", "setAlarm");
             LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_ON);
@@ -130,10 +179,11 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         mAlarmList.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, mAlarmList.size());
-        if (mAlarmList.size() < 1)
+        if (mAlarmList.size() < 2)
         {
             Otto.post(LocationAlarmListFragment.ALARM_LIST_EMPTY_TEXT);
-        }else
+        }
+        else
         {
             Otto.post(LocationTrackingService.DELETE_ALARM_NOTIFICATION);
         }
@@ -149,6 +199,12 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
     {
         View item;
 
+        @Bind(R.id.nativeAdView)
+        NativeExpressAdView nativeAdView;
+
+        @Bind(R.id.nativeAdViewContainer)
+        RelativeLayout nativeAdViewWrapper;
+
         @Bind(R.id.alarmAddress)
         TextView alarmAddress;
 
@@ -160,6 +216,9 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
 
         @Bind(R.id.deleteAlarm)
         ImageView deleteAlarm;
+
+        @Bind(R.id.placeContent)
+        RelativeLayout placeContent;
 
         PlaceViewHolder(View itemView)
         {

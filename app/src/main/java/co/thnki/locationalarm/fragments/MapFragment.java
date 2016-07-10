@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
@@ -31,6 +32,7 @@ import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
@@ -67,7 +69,7 @@ import static co.thnki.locationalarm.utils.LocationUtil.distFrom;
 public class MapFragment extends SupportMapFragment implements
         TouchableWrapper.OnMapTouchListener,
         GeoCodeListener,
-        GoogleMap.OnCameraChangeListener
+        GoogleMap.OnCameraChangeListener, OnMapReadyCallback
 {
     public static final String DIALOG_DISMISS = "dialogDismiss";
 
@@ -203,7 +205,16 @@ public class MapFragment extends SupportMapFragment implements
                 .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
                 .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
                 .apply();
-        startLocationTrackingService();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                startLocationTrackingService();
+            }
+        }, 3000);
+
         Log.d("MapFragmentFlowLogs", "Start Service Called");
 
         setupRadiusSeekBar();
@@ -217,7 +228,13 @@ public class MapFragment extends SupportMapFragment implements
         super.onResume();
         Otto.register(this);
         Log.d("MapFragmentFlowLogs", "onResume");
-        mGoogleMap = getMap();
+        getMapAsync(this);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap)
+    {
+        mGoogleMap = googleMap;
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
         mMarkerAndCircle = new MarkerAndCirclesUtil(mGoogleMap, accentColor, radiusColor);
         if (PermissionUtil.isLocationPermissionAvailable())
@@ -575,7 +592,7 @@ public class MapFragment extends SupportMapFragment implements
                 .apply();
     }
 
-    private void gotoLatLng(LatLng latLng, boolean animate)
+    public void gotoLatLng(LatLng latLng, boolean animate)
     {
         setMapType();
         setCamera(CameraUpdateFactory.newCameraPosition(getCameraPos(latLng)), animate);
@@ -760,10 +777,14 @@ public class MapFragment extends SupportMapFragment implements
         int radius = getSeekBarValue();
         switch (radiusType)
         {
-            case R.id.radius_fts : return (int) Math.floor(radius /  3.28084);
-            case R.id.radius_km : return (int) Math.floor(radius * 1000);
-            case R.id.radius_mi : return (int) Math.floor(radius * 1609.344051499);
-            default: return radius;
+            case R.id.radius_fts:
+                return (int) Math.floor(radius / 3.28084);
+            case R.id.radius_km:
+                return (int) Math.floor(radius * 1000);
+            case R.id.radius_mi:
+                return (int) Math.floor(radius * 1609.344051499);
+            default:
+                return radius;
         }
     }
 
@@ -824,7 +845,8 @@ public class MapFragment extends SupportMapFragment implements
         else if (radius < 12000)
         {
             zoom = 10.5;
-        }else
+        }
+        else
         {
             zoom = 10;
         }
