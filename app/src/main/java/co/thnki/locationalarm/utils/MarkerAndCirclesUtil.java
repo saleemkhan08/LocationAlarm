@@ -32,15 +32,13 @@ import co.thnki.locationalarm.singletons.Otto;
 
 public class MarkerAndCirclesUtil
 {
-
-    public GoogleMap mGoogleMap;
-
-    Map<String, MarkerAndCircle> mMarkerAndCircleMap;
-    Map<String, Circle> circleMap;
-    Map<String, Marker> imgMarkerMap;
-    Map<String, Marker> bgMarkerMap;
-    public static final int TYPE_ALARM = -2;
-    int mAccentColor, mRadiusColor;
+    private GoogleMap mGoogleMap;
+    private Map<String, MarkerAndCircle> mMarkerAndCircleMap;
+    private Map<String, Circle> circleMap;
+    private Map<String, Marker> imgMarkerMap;
+    private Map<String, Marker> bgMarkerMap;
+    private static final int TYPE_ALARM = -2;
+    private int mAccentColor, mRadiusColor;
 
     public MarkerAndCirclesUtil(GoogleMap googleMap, int accentColor, int radiusColor)
     {
@@ -89,7 +87,7 @@ public class MarkerAndCirclesUtil
         }
     }
 
-    public void addMarkerAndCircle(MarkerAndCircle markerAndCircle)
+    private void addMarkerAndCircle(MarkerAndCircle markerAndCircle)
     {
         if (circleMap.containsKey(markerAndCircle.id))
         {
@@ -107,7 +105,7 @@ public class MarkerAndCirclesUtil
                 .position(markerAndCircle.latLng)
                 .anchor(0.5f, 0.5f)
                 .flat(true)
-                .icon(getMapMarker(LocationAlarmApp.getAppContext(), R.mipmap.my_loc_dot_big, 40))));
+                .icon(getMapMarker(LocationAlarmApp.getAppContext(), R.mipmap.marker_bg, 40))));
 
         imgMarkerMap.put(markerAndCircle.id, mGoogleMap.addMarker(new MarkerOptions()
                 .position(markerAndCircle.latLng)
@@ -118,7 +116,7 @@ public class MarkerAndCirclesUtil
         mMarkerAndCircleMap.put(markerAndCircle.id, markerAndCircle);
     }
 
-    public static BitmapDescriptor getMapMarker(Context context, int resourceId, double size)
+    private static BitmapDescriptor getMapMarker(Context context, int resourceId, double size)
     {
         Resources resources = context.getResources();
 
@@ -132,7 +130,7 @@ public class MarkerAndCirclesUtil
         return BitmapDescriptorFactory.fromBitmap(resized);
     }
 
-    public static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight)
+    static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight)
     {
         int width = bm.getWidth();
         int height = bm.getHeight();
@@ -150,7 +148,7 @@ public class MarkerAndCirclesUtil
         return resizedBitmap;
     }
 
-    public void removeMarkerAndCircle(String id)
+    private void removeMarkerAndCircle(String id)
     {
         if (circleMap.containsKey(id))
         {
@@ -192,18 +190,18 @@ public class MarkerAndCirclesUtil
         Otto.unregister(this);
     }
 
-    public static int getDrawableResId(int index)
+    private static int getDrawableResId(int index)
     {
         switch (index)
         {
             case TYPE_ALARM:
-                return R.mipmap.bell_icon_primary_dark;
+                return R.mipmap.bell_primary_dark;
             default:
-                return R.mipmap.others_primary_dark;
+                return R.mipmap.map_pin;
         }
     }
 
-    public static LatLng getLatLng(String lat, String lng)
+    private static LatLng getLatLng(String lat, String lng)
     {
         return new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
     }

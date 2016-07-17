@@ -17,8 +17,8 @@ import co.thnki.locationalarm.LocationAlarmApp;
 import co.thnki.locationalarm.MainActivity;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
 import co.thnki.locationalarm.fragments.LocationAlarmListFragment;
+import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
-import co.thnki.locationalarm.utils.RemoteConfigUtil;
 
 public class NotificationActionReceiver extends BroadcastReceiver
 {
@@ -38,7 +38,7 @@ public class NotificationActionReceiver extends BroadcastReceiver
     {
         String action = intent.getStringExtra(NOTIFICATION_ACTION);
         SharedPreferences preferences = LocationAlarmApp.getPreferences();
-        String pkgName = preferences.getString(RemoteConfigUtil.PACKAGE_NAME, context.getPackageName());
+        String pkgName = preferences.getString(RemoteConfigService.PACKAGE_NAME, context.getPackageName());
 
         Log.d(NOTIFICATION_ACTION, "NOTIFICATION_ACTION : " + action + ", pkgName : "+pkgName);
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);

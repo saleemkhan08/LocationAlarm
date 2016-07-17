@@ -61,4 +61,19 @@ public class LocationUtil
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return (earthRadius * c);
     }
+
+    public static String getAddressLines(String address, int noOfLines)
+    {
+        String[] addressLines = address.split(",");
+        String msg = "";
+        int len = addressLines.length;
+        for (int i = 0; i < len; i++)
+        {
+            if (i < (noOfLines - 1))
+            {
+                msg += addressLines[i] + ", ";
+            }
+        }
+        return msg.substring(0, msg.length() - 2);
+    }
 }

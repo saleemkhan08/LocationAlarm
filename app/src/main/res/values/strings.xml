@@ -22,4 +22,10 @@
     <string name="no_network_access">Please Check Your Internet Connectivity &amp; Try Again!</string>
     <string name="internet_failure">No Internet!</string>
     <string name="ad_unit_id">ca-app-pub-3940256099942544/1072772517</string>
+    <string name="listAdSize">320x150</string>
+    <string name="bannerAdSize">320x80</string>
+    <string name="alarmAddress">Alarm Address</string>
+    <string name="range">Range</string>
+    <string name="deleteAlarm">Delete Alarm</string>
+    <string name="turnOnAlarm">Turn on or turn off alarm</string>
 </resources>

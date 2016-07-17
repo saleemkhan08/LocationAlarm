@@ -41,6 +41,7 @@ public class LocationAlarmListFragment extends Fragment
     @Bind(R.id.emptyListTextView)
     TextView emptyListTextView;
     private AppCompatActivity mActivity;
+    private AlarmAdapter mAlarmAdapter;
 
     public LocationAlarmListFragment()
     {
@@ -64,7 +65,8 @@ public class LocationAlarmListFragment extends Fragment
             showEmptyListString();
         }
 
-        locationAlarmList.setAdapter(new AlarmAdapter(mActivity, mAlarmList));
+        mAlarmAdapter = new AlarmAdapter(mActivity, mAlarmList);
+        locationAlarmList.setAdapter(mAlarmAdapter);
         locationAlarmList.setLayoutManager(new LinearLayoutManager(mActivity));
         return parentView;
     }
@@ -112,6 +114,7 @@ public class LocationAlarmListFragment extends Fragment
     {
         super.onDestroyView();
         Otto.unregister(this);
+        mAlarmAdapter.unRegister();
     }
 
     @Override

@@ -44,7 +44,7 @@ public class NotificationsUtil
         NotificationData data = new NotificationData();
 
         data.action1IntentText = (noOfAlarms > 1) ? "Turn Off All Alarms" : "Turn Off Alarm";
-        data.action1IntentIcon = R.mipmap.bell_cross_accent;
+        data.action1IntentIcon = R.mipmap.bell_slash_grey;
         data.action1IntentTag = NotificationActionReceiver.CANCEL_ALL_ALARMS;
 
         data.contentIntentTag = MainActivity.TAG;
@@ -77,7 +77,7 @@ public class NotificationsUtil
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mAppContext);
         mBuilder.setContentTitle(data.contentTitle)
-                .setSmallIcon(R.mipmap.location_alarm_white)
+                .setSmallIcon(R.mipmap.app_icon_white)
                 .setOngoing(data.onGoing)
                 .setAutoCancel(true)
                 .setContentText(data.contentText)
@@ -106,7 +106,7 @@ public class NotificationsUtil
             mBuilder.setLargeIcon(mLargeIcon);
         }
 
-        if (data.vibrate)
+        if(data.vibrate)
         {
             Notification notificationDefault = new Notification();
             notificationDefault.defaults |= Notification.DEFAULT_LIGHTS; // LED
@@ -129,7 +129,7 @@ public class NotificationsUtil
             e.printStackTrace();
             Log.d(TAG, " Error : " + e.getMessage());
         }
-        return BitmapFactory.decodeResource(mAppContext.getResources(), R.mipmap.location_alarm_notification);
+        return BitmapFactory.decodeResource(mAppContext.getResources(), R.mipmap.app_icon);
     }
 
     private static class ShowNormalNotification extends AsyncTask<NotificationData, Void, Void>

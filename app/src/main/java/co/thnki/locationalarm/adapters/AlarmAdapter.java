@@ -15,41 +15,49 @@ import android.widget.Toast;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.NativeExpressAdView;
+import com.squareup.otto.Subscribe;
 
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import co.thnki.locationalarm.LocationAlarmApp;
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
 import co.thnki.locationalarm.fragments.LocationAlarmListFragment;
 import co.thnki.locationalarm.pojos.LocationAlarm;
+import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.services.LocationTrackingService;
+import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
-
-import static co.thnki.locationalarm.AlarmActivity.getAddressLines;
+import co.thnki.locationalarm.utils.ConnectivityUtil;
+import co.thnki.locationalarm.utils.ImageUtil;
+import co.thnki.locationalarm.utils.LocationUtil;
 
 public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHolder>
 {
     private AppCompatActivity mActivity;
     private LayoutInflater inflater;
     private List<LocationAlarm> mAlarmList;
-
+    private boolean isAdShown;
     public AlarmAdapter(AppCompatActivity activity, List<LocationAlarm> alarmList)
+
     {
         mActivity = activity;
         mAlarmList = alarmList;
-        if (mAlarmList.size() == 0)
-        {
-            mAlarmList.add(0, null);
-        }
-        else
-        {
-            mAlarmList.add(1, null);
-        }
-
         inflater = LayoutInflater.from(mActivity);
+        if (ConnectivityUtil.isConnected(activity))
+        {
+            insertAd();
+        }
+        Otto.register(this);
+    }
+
+    public void unRegister()
+    {
+        Otto.unregister(this);
     }
 
     @Override
@@ -67,17 +75,37 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         if (alarm == null)
         {
             Log.d("alarmAdapter", "Loading ad");
+            holder.item.setVisibility(View.GONE);
             holder.placeContent.setVisibility(View.GONE);
-            AdRequest request = new AdRequest.Builder().addTestDevice("51B143E236817102C0BC44F96EE8A5F7").build();
-            holder.nativeAdView.loadAd(request);
-            holder.nativeAdView.setAdListener(new AdListener()
+            AdRequest request = new AdRequest.Builder()
+                    .addTestDevice("51B143E236817102C0BC44F96EE8A5F7")
+                    .build();
+            NativeExpressAdView alarmListAdView = new NativeExpressAdView(mActivity);
+            alarmListAdView.setAdSize(new AdSize(ImageUtil.getAdWidth(mActivity) - 40, 300));
+            //TODO update the current AdUnitId
+            alarmListAdView.setAdUnitId(
+                    LocationAlarmApp.getPreferences()
+                            .getString(RemoteConfigService.AD_UNIT_ID + "2", "ca-app-pub-9949935976977846/3250322417"));
+
+            holder.nativeAdViewWrapper.addView(alarmListAdView);
+            alarmListAdView.loadAd(request);
+            alarmListAdView.setAdListener(new AdListener()
             {
                 @Override
                 public void onAdLoaded()
                 {
                     super.onAdLoaded();
                     Log.d("alarmAdapter", "onAdLoaded");
+                    holder.item.setVisibility(View.VISIBLE);
+                    holder.placeContent.setVisibility(View.GONE);
                     holder.nativeAdViewWrapper.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAdFailedToLoad(int i)
+                {
+                    super.onAdFailedToLoad(i);
+                    holder.item.setVisibility(View.GONE);
                 }
             });
         }
@@ -87,7 +115,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
             holder.nativeAdViewWrapper.setVisibility(View.GONE);
             holder.placeContent.setVisibility(View.VISIBLE);
 
-            holder.alarmAddress.setText(getAddressLines(alarm.address, 3));
+            holder.alarmAddress.setText(LocationUtil.getAddressLines(alarm.address, 3));
 
             holder.item.setOnClickListener(new View.OnClickListener()
             {
@@ -101,11 +129,11 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
             holder.range.setText(getRadiusText(alarm.radius));
             if (alarm.status == LocationAlarm.ALARM_ON)
             {
-                holder.cancelAlarm.setImageResource(R.mipmap.bell_cross_accent);
+                holder.cancelAlarm.setImageResource(R.mipmap.bell_slash_accent);
             }
             else
             {
-                holder.cancelAlarm.setImageResource(R.mipmap.bell_icon_accent);
+                holder.cancelAlarm.setImageResource(R.mipmap.bell_accent);
             }
 
             holder.cancelAlarm.setOnClickListener(new View.OnClickListener()
@@ -117,12 +145,12 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
                     if (status == LocationAlarm.ALARM_ON)
                     {
                         setAlarm(alarm, false);
-                        holder.cancelAlarm.setImageResource(R.mipmap.bell_icon_accent);
+                        holder.cancelAlarm.setImageResource(R.mipmap.bell_accent);
                     }
                     else
                     {
                         setAlarm(alarm, true);
-                        holder.cancelAlarm.setImageResource(R.mipmap.bell_cross_accent);
+                        holder.cancelAlarm.setImageResource(R.mipmap.bell_slash_accent);
                     }
                 }
             });
@@ -179,7 +207,12 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         mAlarmList.remove(position);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, mAlarmList.size());
-        if (mAlarmList.size() < 2)
+        int limit = 1;
+        if (isAdShown)
+        {
+            limit = 2;
+        }
+        if (mAlarmList.size() < limit)
         {
             Otto.post(LocationAlarmListFragment.ALARM_LIST_EMPTY_TEXT);
         }
@@ -198,9 +231,6 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
     class PlaceViewHolder extends RecyclerView.ViewHolder
     {
         View item;
-
-        @Bind(R.id.nativeAdView)
-        NativeExpressAdView nativeAdView;
 
         @Bind(R.id.nativeAdViewContainer)
         RelativeLayout nativeAdViewWrapper;
@@ -226,5 +256,53 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
             item = itemView;
             ButterKnife.bind(this, itemView);
         }
+    }
+
+    @Subscribe
+    public void onInternetConnectivityChange(String status)
+    {
+        switch (status)
+        {
+            case InternetConnectivityListener.INTERNET_CONNECTED:
+                insertAd();
+                break;
+            case InternetConnectivityListener.INTERNET_DISCONNECTED:
+                removeAd();
+                break;
+        }
+    }
+
+    private void removeAd()
+    {
+        int size = mAlarmList.size();
+        for (int index = 0; index < size; index++)
+        {
+            if (mAlarmList.get(index) == null)
+            {
+                isAdShown = false;
+                removeAt(index);
+            }
+        }
+    }
+
+    private void insertAd()
+    {
+        if (!isAdShown)
+        {
+            isAdShown = true;
+            if (mAlarmList.size() > 0)
+            {
+                mAlarmList.add(1, null);
+                notifyItemInserted(1);
+                Log.d("LagIssue", "insertAd : 1");
+            }
+            else
+            {
+                mAlarmList.add(null);
+                notifyItemInserted(0);
+                Log.d("LagIssue", "insertAd : 0");
+            }
+        }
+
     }
 }

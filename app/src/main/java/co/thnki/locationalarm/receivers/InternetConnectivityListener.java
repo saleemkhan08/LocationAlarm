@@ -3,11 +3,11 @@ package co.thnki.locationalarm.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.util.Log;
 
-import co.thnki.locationalarm.services.UpdateCheckService;
+import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
+import co.thnki.locationalarm.utils.ConnectivityUtil;
 
 public class InternetConnectivityListener extends BroadcastReceiver
 {
@@ -21,13 +21,14 @@ public class InternetConnectivityListener extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
+        Log.d("LagIssue", "onReceive  : InternetConnectivityListener");
         if (intent.getExtras() != null)
         {
-            NetworkInfo ni = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
-            if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED)
+            if (ConnectivityUtil.isConnected(context))
             {
-                context.startService(new Intent(context, UpdateCheckService.class));
+                Log.d("LagIssue", "INTERNET_CONNECTED  : InternetConnectivityListener");
                 Otto.post(INTERNET_CONNECTED);
+                context.startService(new Intent(context, RemoteConfigService.class));
             }
             else
             {

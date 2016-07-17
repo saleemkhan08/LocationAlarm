@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -134,7 +133,7 @@ public class LocationTrackingService extends Service implements LocationListener
         Log.d(TAG, "startLocationUpdates");
         if (mGoogleApiClient.isConnected())
         {
-            int interval = Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "500"));
+            int interval = Integer.parseInt(preferences.getString(KEY_LOCATION_UPDATE_FREQ, "750"));
             mLocationRequest.setInterval(interval);
             mLocationRequest.setFastestInterval(interval);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
@@ -245,15 +244,7 @@ public class LocationTrackingService extends Service implements LocationListener
         Otto.post(location);
         if (preferences.getBoolean(KEY_ALARM_SET, false))
         {
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    triggerAlarm(currentLatLng);
-                }
-            },3000);
+            triggerAlarm(currentLatLng);
         }
         stopService();
     }
@@ -301,7 +292,7 @@ public class LocationTrackingService extends Service implements LocationListener
                         }
                         else
                         {
-                            locations = AlarmActivity.getAddressLines(alarm.address, 3);
+                            locations = LocationUtil.getAddressLines(alarm.address, 3);
                         }
                     }
                     allAlarmsStatus = currentAlarm;

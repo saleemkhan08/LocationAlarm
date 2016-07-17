@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "499670056097",
-    "firebase_url": "https://location-alarm-84c06.firebaseio.com",
-    "project_id": "location-alarm-84c06",
-    "storage_bucket": "location-alarm-84c06.appspot.com"
+    "project_number": "390568388000",
+    "firebase_url": "https://location-alarm-93afb.firebaseio.com",
+    "project_id": "location-alarm-93afb",
+    "storage_bucket": "location-alarm-93afb.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:499670056097:android:6fee239d2cdcf305",
+        "mobilesdk_app_id": "1:390568388000:android:6fee239d2cdcf305",
         "android_client_info": {
           "package_name": "co.thnki.locationalarm"
         }
       },
       "oauth_client": [
         {
-          "client_id": "499670056097-91sg1t14upondh6vsgtt5shgj63qsv08.apps.googleusercontent.com",
+          "client_id": "390568388000-69mfb4buo4jc8oe57b0q51ihjiidk75b.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "co.thnki.locationalarm",
@@ -23,13 +23,13 @@
           }
         },
         {
-          "client_id": "499670056097-fk5rfr999e4h9b78e6q7ph3o3s9vh05m.apps.googleusercontent.com",
+          "client_id": "390568388000-ikpib9vqmreiqmna8e1m0avrhh13pjnt.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAZzocaDuU0b7yqLuGf5EVCaUJW6RP_FWg"
+          "current_key": "AIzaSyCm-THrXzYRzOU5xyrq6SZ6kzMuqW8eFKQ"
         }
       ],
       "services": {
@@ -37,13 +37,8 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "499670056097-fk5rfr999e4h9b78e6q7ph3o3s9vh05m.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2

@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
@@ -205,16 +204,7 @@ public class MapFragment extends SupportMapFragment implements
                 .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
                 .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
                 .apply();
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                startLocationTrackingService();
-            }
-        }, 3000);
-
+        startLocationTrackingService();
         Log.d("MapFragmentFlowLogs", "Start Service Called");
 
         setupRadiusSeekBar();
@@ -734,7 +724,7 @@ public class MapFragment extends SupportMapFragment implements
                 .position(latLng)
                 .anchor(0.5f, 0.5f)
                 .flat(true)
-                .icon(LocationUtil.getMapMarker(mActivity, R.mipmap.my_loc_dot_48, 17)));
+                .icon(LocationUtil.getMapMarker(mActivity, R.mipmap.my_loc_dot, 17)));
 
         if (myLocCircle != null)
         {

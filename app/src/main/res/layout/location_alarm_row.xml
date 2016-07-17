@@ -6,13 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:layout_marginTop="12dp"
     android:layout_marginBottom="3dp"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
+    android:layout_marginTop="12dp"
     card_view:cardBackgroundColor="@android:color/transparent"
-    card_view:cardCornerRadius="4dp"
-    xmlns:ads="http://schemas.android.com/apk/res-auto">
+    card_view:cardCornerRadius="4dp">
 
     <RelativeLayout
         android:id="@+id/placeContent"
@@ -27,18 +26,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/actionContainer"
+            android:layout_toStartOf="@+id/actionContainer"
             android:orientation="vertical"
-            android:paddingLeft="10dp">
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
 
             <TextView
                 android:id="@+id/alarmAddress"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="2"
-                android:ellipsize="end"
-                android:text="Alarm Address"
+                android:text="@string/alarmAddress"
                 android:textColor="@color/colorPrimaryDark"
                 android:textSize="18sp"
                 />
@@ -47,56 +47,50 @@
                 android:id="@+id/range"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
                 android:layout_marginTop="4dp"
                 android:gravity="center_vertical"
-                android:text="Range"
+                android:text="@string/range"
                 android:textColor="@color/grey"
                 android:textSize="15sp"
                 />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
             android:id="@+id/actionContainer"
-            android:orientation="vertical"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_height="wrap_content">
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+
             <ImageView
                 android:id="@+id/deleteAlarm"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="@drawable/bg_drawable"
-                android:paddingRight="10dp"
                 android:paddingLeft="10dp"
-                android:src="@mipmap/delete_accent"/>
+                android:paddingRight="10dp"
+                android:src="@mipmap/delete_accent"
+                android:contentDescription="@string/deleteAlarm"/>
+
             <ImageView
                 android:id="@+id/cancelAlarm"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="@drawable/bg_drawable"
-                android:paddingRight="10dp"
                 android:paddingLeft="10dp"
-                android:src="@mipmap/bell_cross_accent"/>
+                android:paddingRight="10dp"
+                android:src="@mipmap/bell_accent"
+                android:contentDescription="@string/turnOnAlarm"/>
         </LinearLayout>
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/nativeAdViewContainer"
         android:layout_width="match_parent"
-        android:visibility="gone"
+        android:layout_height="wrap_content"
         android:background="#fff"
         android:padding="10dp"
-        android:id="@+id/nativeAdViewContainer"
-        android:layout_height="wrap_content">
-        <com.google.android.gms.ads.NativeExpressAdView
-            android:id="@+id/nativeAdView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            ads:adSize="320x150"
-            ads:adUnitId="@string/ad_unit_id">
-        </com.google.android.gms.ads.NativeExpressAdView>
+        android:visibility="gone">
     </RelativeLayout>
 </android.support.v7.widget.CardView>
