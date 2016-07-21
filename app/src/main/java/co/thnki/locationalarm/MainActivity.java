@@ -41,9 +41,6 @@ import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
 import co.thnki.locationalarm.utils.ImageUtil;
 import co.thnki.locationalarm.utils.LocationUtil;
-import co.thnki.locationalarm.utils.PermissionUtil;
-
-import static co.thnki.locationalarm.singletons.Otto.register;
 
 public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOffsetChangedListener
 {
@@ -57,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     @Bind(R.id.mapAdView)
     RelativeLayout mMapAdView;
 
-    AdView mAdView;
+    private AdView mAdView;
 
     @Bind(R.id.descriptionText)
     TextView mDescriptionText;
@@ -85,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     RelativeLayout mTitleBar;
     private MapFragment mMapFragment;
 
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -95,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
 
     @BindString(R.string.tapToViewMap)
     String mTapToViewTheMap;
+    private SharedPreferences mPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -102,22 +101,34 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
         Log.d("LagIssue", "onCreate  : MainActivity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SharedPreferences mPreferences = LocationAlarmApp.getPreferences();
+        mPreferences = LocationAlarmApp.getPreferences();
         ButterKnife.bind(this);
-        register(this);
-        //TODO set current adUnitId
+        Otto.register(this);
+        initializeAppBarLayout();
+        initializeAppIndexing();
+        initializeMapAd();
+    }
+
+    private void initializeMapAd()
+    {
         mAdView = new AdView(this);
         mAdView.setAdSize(new AdSize(ImageUtil.getAdWidth(this) - 40, 50));
-        ViewGroup.LayoutParams adLayoutParams = mAdView.getLayoutParams();
         mAdView.setAdUnitId(mPreferences.getString(RemoteConfigService.AD_UNIT_ID + 1, "ca-app-pub-9949935976977846/1773589219"));
+
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout
                 .LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
+
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+
         RelativeLayout layout = new RelativeLayout(this);
         layout.setLayoutParams(layoutParams);
         layout.addView(mAdView);
         mMapAdView.addView(layout);
+    }
+
+    private void initializeAppBarLayout()
+    {
         CoordinatorLayout.LayoutParams params =
                 (CoordinatorLayout.LayoutParams) mAppBarLayout.getLayoutParams();
         AppBarLayout.Behavior behavior = new AppBarLayout.Behavior();
@@ -130,15 +141,19 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
             }
         });
         params.setBehavior(behavior);
+
         mAppBarLayout.addOnOffsetChangedListener(this);
-        FragmentManager manager = getSupportFragmentManager();
+		FragmentManager manager = getSupportFragmentManager();
         addMapFragment(manager);
         addAlarmListFragment(manager);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-
     }
+
+    private void initializeAppIndexing()
+    {
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    }
+
+
 
     private void addMapFragment(FragmentManager manager)
     {
@@ -173,18 +188,6 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
                 super.onAdLoaded();
                 TransitionManager.beginDelayedTransition(mMapAdView);
                 mMapAdView.setVisibility(View.VISIBLE);
-                Log.d("LagIssue", "onAdLoaded  : MainActivity");
-            }
-
-            @Override
-            public void onAdFailedToLoad(int i)
-            {
-                super.onAdFailedToLoad(i);
-                if (PermissionUtil.isConnected(MainActivity.this))
-                {
-                    Log.d("LagIssue", "onAdFailedToLoad  : MainActivity");
-                    //loadAd();
-                }
             }
         });
     }
@@ -233,12 +236,16 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
                 Otto.post(MapFragment.DIALOG_DISMISS);
                 mDescriptionText.setText(mTapToViewTheList);
                 isCollapsed = true;
+                /*if(!ConnectivityUtil.isConnected(this))
+                {
+                    mAlarmAdapter.removeAd();
+                }*/
                 scrollUp.setImageResource(R.mipmap.scroll_up);
             }
         }
         else if (Math.abs(verticalOffset) >= appBarLayout.getTotalScrollRange())
         {
-            if(isCollapsed)
+            if (isCollapsed)
             {
                 mDescriptionText.setText(mTapToViewTheMap);
                 scrollUp.setImageResource(R.mipmap.scroll_down);

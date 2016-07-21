@@ -49,6 +49,7 @@ import butterknife.BindDrawable;
 import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import co.thnki.locationalarm.MainActivity;
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
 import co.thnki.locationalarm.interfaces.GeoCodeListener;
@@ -501,7 +502,7 @@ public class MapFragment extends SupportMapFragment implements
         for (LocationAlarm locationAlarm : list)
         {
             double dist = LocationUtil.distFrom(locationAlarm.latitude, locationAlarm.longitude, alarm.latitude, alarm.longitude);
-            if (dist < (locationAlarm.radius))
+            if (dist < locationAlarm.radius || dist < alarm.radius)
             {
                 isDuplicate = true;
                 break;

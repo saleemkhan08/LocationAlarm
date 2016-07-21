@@ -42,12 +42,17 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
     private LayoutInflater inflater;
     private List<LocationAlarm> mAlarmList;
     private boolean isAdShown;
+    AdRequest mRequest;
     public AlarmAdapter(AppCompatActivity activity, List<LocationAlarm> alarmList)
 
     {
         mActivity = activity;
         mAlarmList = alarmList;
         inflater = LayoutInflater.from(mActivity);
+        mRequest = new AdRequest.Builder()
+                .addTestDevice("51B143E236817102C0BC44F96EE8A5F7")
+                .build();
+
         if (ConnectivityUtil.isConnected(activity))
         {
             insertAd();
@@ -75,29 +80,15 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         if (alarm == null)
         {
             Log.d("alarmAdapter", "Loading ad");
-            holder.item.setVisibility(View.GONE);
-            holder.placeContent.setVisibility(View.GONE);
-            AdRequest request = new AdRequest.Builder()
-                    .addTestDevice("51B143E236817102C0BC44F96EE8A5F7")
-                    .build();
-            NativeExpressAdView alarmListAdView = new NativeExpressAdView(mActivity);
-            alarmListAdView.setAdSize(new AdSize(ImageUtil.getAdWidth(mActivity) - 40, 300));
-            //TODO update the current AdUnitId
-            alarmListAdView.setAdUnitId(
-                    LocationAlarmApp.getPreferences()
-                            .getString(RemoteConfigService.AD_UNIT_ID + "2", "ca-app-pub-9949935976977846/3250322417"));
-
-            holder.nativeAdViewWrapper.addView(alarmListAdView);
-            alarmListAdView.loadAd(request);
-            alarmListAdView.setAdListener(new AdListener()
+            holder.nativeAdViewWrapper.addView(holder.alarmListAdView);
+            holder.alarmListAdView.loadAd(mRequest);
+            holder.alarmListAdView.setAdListener(new AdListener()
             {
                 @Override
                 public void onAdLoaded()
                 {
                     super.onAdLoaded();
                     Log.d("alarmAdapter", "onAdLoaded");
-                    holder.item.setVisibility(View.VISIBLE);
-                    holder.placeContent.setVisibility(View.GONE);
                     holder.nativeAdViewWrapper.setVisibility(View.VISIBLE);
                 }
 
@@ -141,7 +132,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
                 @Override
                 public void onClick(View v)
                 {
-                    int status = LocationAlarmDao.getAlarm(alarm.address).status;
+                    int status = LocationAlarmDao.getAlarm(alarm.alarmId).status;
                     if (status == LocationAlarm.ALARM_ON)
                     {
                         setAlarm(alarm, false);
@@ -160,7 +151,7 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
                 @Override
                 public void onClick(View v)
                 {
-                    LocationAlarmDao.delete(alarm.address);
+                    LocationAlarmDao.delete(alarm.alarmId);
                     removeAt(position);
                 }
             });
@@ -172,13 +163,13 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         if (isSet)
         {
             Log.d("FlowLogs", "setAlarm");
-            LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_ON);
+            LocationAlarmDao.update(alarm.alarmId, LocationAlarm.ALARM_ON);
             toast("Alarm Set : \n" + alarm.address);
         }
         else
         {
             Log.d("FlowLogs", "resetAlarm");
-            LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_OFF);
+            LocationAlarmDao.update(alarm.alarmId, LocationAlarm.ALARM_OFF);
             toast("Alarm Turned off : \n" + alarm.address);
         }
 
@@ -250,11 +241,19 @@ public class AlarmAdapter extends RecyclerView.Adapter<AlarmAdapter.PlaceViewHol
         @Bind(R.id.placeContent)
         RelativeLayout placeContent;
 
+        NativeExpressAdView alarmListAdView;
+
         PlaceViewHolder(View itemView)
         {
             super(itemView);
             item = itemView;
             ButterKnife.bind(this, itemView);
+            alarmListAdView = new NativeExpressAdView(mActivity);
+            alarmListAdView.setAdSize(new AdSize(ImageUtil.getAdWidth(mActivity) - 40, 300));
+            alarmListAdView.setAdUnitId(
+                    LocationAlarmApp.getPreferences()
+                            .getString(RemoteConfigService.AD_UNIT_ID + "2", "ca-app-pub-9949935976977846/3250322417"));
+
         }
     }
 

@@ -28,4 +28,6 @@
     <string name="range">Range</string>
     <string name="deleteAlarm">Delete Alarm</string>
     <string name="turnOnAlarm">Turn on or turn off alarm</string>
+    <string name="test_admob_unit_id">ca-app-pub-3940256099942544/3986624511</string>
+    <string name="test_admob_express_unit_id">ca-app-pub-3940256099942544/1072772517</string>
 </resources>

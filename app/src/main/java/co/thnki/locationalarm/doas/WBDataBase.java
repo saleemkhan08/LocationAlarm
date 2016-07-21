@@ -11,31 +11,29 @@ import android.widget.Toast;
 
 import co.thnki.locationalarm.LocationAlarmApp;
 
-public class WBDataBase
+class WBDataBase
 {
     private SQLiteDatabase db;
-    public static final String DATABASE_NAME = "locationAlarm";
+    private static final String DATABASE_NAME = "locationAlarm";
 
-    public WBDataBase()
+    WBDataBase()
     {
         DataBaseHelper dataBaseHelper = new DataBaseHelper(LocationAlarmApp.getAppContext(), 1);
         db = dataBaseHelper.getWritableDatabase();
     }
 
-    class DataBaseHelper extends SQLiteOpenHelper
+    private class DataBaseHelper extends SQLiteOpenHelper
     {
         String[] mTableSchema = {
-                AccountsDao.TABLE_SCHEMA,
                 LocationAlarmDao.TABLE_SCHEMA
         };
         String[] mDropTable = {
-                AccountsDao.TABLE_SCHEMA,
                 LocationAlarmDao.TABLE_SCHEMA
         };
 
         Context mContext;
 
-        public DataBaseHelper(Context context, int version)
+        DataBaseHelper(Context context, int version)
         {
             super(context, DATABASE_NAME, null, version);
             mContext = context;
@@ -77,39 +75,33 @@ public class WBDataBase
         }
     }
 
-    public long insert(String tblname, ContentValues values)
+    long insert(String tblname, ContentValues values)
     {
         Log.d("DatabaseProblem", "insert : tblname : " + tblname + ", values : " + values);
         return db.insertWithOnConflict(tblname, null, values, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
-    public long insertShow(String tblname, ContentValues values)
-    {
-        Log.d("DatabaseProblem", "insert : tblname : " + tblname + ", values : " + values);
-        return db.insert(tblname, null, values);
-    }
-
-    public Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String groupBy, String orderBy)
+    Cursor query(String tableName, String[] columns, String selection, String[] selectionArgs, String groupBy, String orderBy)
     {
         return db.query(tableName, columns, selection, selectionArgs, groupBy, null, orderBy, null);
     }
 
-    public Cursor query(String query)
+    Cursor query(String query)
     {
         return db.rawQuery(query, null);
     }
 
-    public long update(String tblname, ContentValues values, String whereClause, String[] whereArgs)
+    long update(String tblname, ContentValues values, String whereClause, String[] whereArgs)
     {
         return db.update(tblname, values, whereClause, whereArgs);
     }
 
-    public long delete(String tblname, String whereClause, String[] whereArgs)
+    long delete(String tblname, String whereClause, String[] whereArgs)
     {
         return db.delete(tblname, whereClause, whereArgs);
     }
 
-    public void closeDb()
+    void closeDb()
     {
         db.close();
     }

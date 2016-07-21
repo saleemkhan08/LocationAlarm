@@ -9,8 +9,9 @@ import co.thnki.locationalarm.pojos.LocationAlarm;
 
 public class LocationAlarmDao
 {
-    public static final String TABLE_SCHEMA = "CREATE TABLE " + LocationAlarm.TABLE + " ("
-            + LocationAlarm.ADDRESS + " VARCHAR(255) PRIMARY KEY, "
+    static final String TABLE_SCHEMA = "CREATE TABLE " + LocationAlarm.TABLE + " ("
+            +LocationAlarm.ALARM_ID +" INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + LocationAlarm.ADDRESS + " VARCHAR(255), "
             + LocationAlarm.RADIUS + " INTEGER, "
             + LocationAlarm.LATITUDE + " VARCHAR(255), "
             + LocationAlarm.STATUS + " INTEGER, "
@@ -38,10 +39,10 @@ public class LocationAlarmDao
         mWBDataBase.delete(LocationAlarm.TABLE, null, null);
     }
 
-    public static void delete(String address)
+    public static void delete(int alarmId)
     {
         WBDataBase mWBDataBase = new WBDataBase();
-        mWBDataBase.delete(LocationAlarm.TABLE, LocationAlarm.ADDRESS + " = ? ",new String[]{address});
+        mWBDataBase.delete(LocationAlarm.TABLE, LocationAlarm.ALARM_ID + " = ? ",new String[]{alarmId+""});
         mWBDataBase.closeDb();
     }
 
@@ -55,6 +56,7 @@ public class LocationAlarmDao
             while (cursor.moveToNext())
             {
                 LocationAlarm alarm = new LocationAlarm();
+                alarm.alarmId = cursor.getInt(cursor.getColumnIndex(LocationAlarm.ALARM_ID));
                 alarm.address = cursor.getString(cursor.getColumnIndex(LocationAlarm.ADDRESS));
                 alarm.radius = cursor.getInt(cursor.getColumnIndex(LocationAlarm.RADIUS));
                 alarm.latitude =  cursor.getString(cursor.getColumnIndex(LocationAlarm.LATITUDE));
@@ -68,16 +70,17 @@ public class LocationAlarmDao
         return alarmList;
     }
 
-    public static LocationAlarm getAlarm(String address)
+    public static LocationAlarm getAlarm(int alarmId)
     {
         WBDataBase mWBDataBase = new WBDataBase();
         LocationAlarm alarm = null;
-        Cursor cursor = mWBDataBase.query(LocationAlarm.TABLE, null,  LocationAlarm.ADDRESS + " = ? ", new String []{address}, null, null);
+        Cursor cursor = mWBDataBase.query(LocationAlarm.TABLE, null,  LocationAlarm.ALARM_ID + " = ? ", new String []{alarmId+""}, null, null);
         if (null != cursor)
         {
             if (cursor.moveToFirst())
             {
                 alarm = new LocationAlarm();
+                alarm.alarmId = cursor.getInt(cursor.getColumnIndex(LocationAlarm.ALARM_ID));
                 alarm.address = cursor.getString(cursor.getColumnIndex(LocationAlarm.ADDRESS));
                 alarm.radius = cursor.getInt(cursor.getColumnIndex(LocationAlarm.RADIUS));
                 alarm.latitude =  cursor.getString(cursor.getColumnIndex(LocationAlarm.LATITUDE));
@@ -90,12 +93,12 @@ public class LocationAlarmDao
         return alarm;
     }
 
-    public static void update(String address, int status)
+    public static void update(int alarmId, int status)
     {
         WBDataBase mWBDataBase = new WBDataBase();
         ContentValues values = new ContentValues();
         values.put(LocationAlarm.STATUS, status);
-        mWBDataBase.update(LocationAlarm.TABLE, values, LocationAlarm.ADDRESS + " = ? ", new String []{address});
+        mWBDataBase.update(LocationAlarm.TABLE, values, LocationAlarm.ALARM_ID + " = ? ", new String []{alarmId+""});
         mWBDataBase.closeDb();
     }
 

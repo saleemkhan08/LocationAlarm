@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.MobileAds;
 import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
@@ -19,12 +21,17 @@ import java.util.ArrayList;
 import butterknife.Bind;
 import butterknife.BindString;
 import butterknife.ButterKnife;
+import co.thnki.locationalarm.LocationAlarmApp;
 import co.thnki.locationalarm.MainActivity;
 import co.thnki.locationalarm.R;
+import co.thnki.locationalarm.adapters.AdMobNativeAdAdapter;
 import co.thnki.locationalarm.adapters.AlarmAdapter;
+import co.thnki.locationalarm.ads.expressads.AdMobExpressRecyclerAdapterWrapper;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
 import co.thnki.locationalarm.pojos.LocationAlarm;
+import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
+import co.thnki.locationalarm.utils.ImageUtil;
 import co.thnki.locationalarm.utils.TransitionUtil;
 
 public class LocationAlarmListFragment extends Fragment
@@ -41,7 +48,8 @@ public class LocationAlarmListFragment extends Fragment
     @Bind(R.id.emptyListTextView)
     TextView emptyListTextView;
     private AppCompatActivity mActivity;
-    private AlarmAdapter mAlarmAdapter;
+    private AdMobNativeAdAdapter mAdmobNativeAdAdapter;
+    private AdMobExpressRecyclerAdapterWrapper mAdapterWrapper;
 
     public LocationAlarmListFragment()
     {
@@ -65,9 +73,30 @@ public class LocationAlarmListFragment extends Fragment
             showEmptyListString();
         }
 
-        mAlarmAdapter = new AlarmAdapter(mActivity, mAlarmList);
-        locationAlarmList.setAdapter(mAlarmAdapter);
+        String mAdUnitId = LocationAlarmApp.getPreferences()
+                .getString(RemoteConfigService.AD_UNIT_ID + "2", "ca-app-pub-9949935976977846/3250322417");
+
+        MobileAds.initialize(LocationAlarmApp.getAppContext(), mAdUnitId);
+
+        mAdmobNativeAdAdapter = new AdMobNativeAdAdapter(mActivity, mAlarmList);
+
+        mAdapterWrapper = new AdMobExpressRecyclerAdapterWrapper(mActivity);
+        mAdapterWrapper.addTestDeviceId("51B143E236817102C0BC44F96EE8A5F7");
+
+        mAdapterWrapper.setAdSize(new AdSize(ImageUtil.getAdWidth(mActivity) - 40, 300));
+        mAdapterWrapper.setAdsUnitId(mAdUnitId);
+
+        mAdapterWrapper.setAdapter(mAdmobNativeAdAdapter);
+
+        mAdapterWrapper.setLimitOfAds(3);
+        mAdapterWrapper.setNoOfDataBetweenAds(5);
+        mAdapterWrapper.setFirstAdIndex(1);
+
+        locationAlarmList.setAdapter(mAdapterWrapper);
         locationAlarmList.setLayoutManager(new LinearLayoutManager(mActivity));
+
+        mAdmobNativeAdAdapter.notifyDataSetChanged();
+
         return parentView;
     }
 
@@ -114,7 +143,8 @@ public class LocationAlarmListFragment extends Fragment
     {
         super.onDestroyView();
         Otto.unregister(this);
-        mAlarmAdapter.unRegister();
+        mAdmobNativeAdAdapter.unRegister();
+        mAdapterWrapper.destroyAds();
     }
 
     @Override

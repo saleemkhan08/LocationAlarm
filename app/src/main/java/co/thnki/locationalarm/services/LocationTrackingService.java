@@ -251,7 +251,6 @@ public class LocationTrackingService extends Service implements LocationListener
 
     private void triggerAlarm(LatLng latLng)
     {
-        Log.d(TAG, "triggerAlarm");
         ArrayList<LocationAlarm> alarms = LocationAlarmDao.getList();
         boolean allAlarmsStatus = false;
         String locations = "No Alarms Set...";
@@ -268,7 +267,6 @@ public class LocationTrackingService extends Service implements LocationListener
                     double distance = (latLng != null) ? LocationUtil.distFrom(latLng.latitude, latLng.longitude, alarmLat, alarmLng)
                             : 1000000;
 
-                    Log.d("triggerAlarm", "triggerAlarm  distance : " + distance);
                     boolean currentAlarm = true;
                     if (distance < alarm.radius)
                     {
@@ -281,7 +279,7 @@ public class LocationTrackingService extends Service implements LocationListener
                         startService(alarmAudioIntent);
 
                         currentAlarm = false;
-                        LocationAlarmDao.update(alarm.address, LocationAlarm.ALARM_OFF);
+                        LocationAlarmDao.update(alarm.alarmId, LocationAlarm.ALARM_OFF);
                     }
                     else
                     {
@@ -295,7 +293,7 @@ public class LocationTrackingService extends Service implements LocationListener
                             locations = LocationUtil.getAddressLines(alarm.address, 3);
                         }
                     }
-                    allAlarmsStatus = currentAlarm;
+                    allAlarmsStatus |= currentAlarm;
                 }
             }
         }

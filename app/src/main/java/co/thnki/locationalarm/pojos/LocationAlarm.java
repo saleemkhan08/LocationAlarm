@@ -14,9 +14,17 @@ public class LocationAlarm implements Parcelable
     public static final int ALARM_ON = 1;
     public static final int ALARM_OFF = 0;
     public static final String ALARM = "alarm";
+    public static final String ALARM_ID = "alarmId";
 
-    public String latitude, longitude, address;
-    public int radius, status;
+    public String latitude;
+    public String longitude;
+    public String address;
+    public int radius;
+    public int status;
+    public int alarmId;
+    public LocationAlarm()
+    {
+    }
 
     @Override
     public int describeContents()
@@ -32,10 +40,7 @@ public class LocationAlarm implements Parcelable
         dest.writeString(this.address);
         dest.writeInt(this.radius);
         dest.writeInt(this.status);
-    }
-
-    public LocationAlarm()
-    {
+        dest.writeInt(this.alarmId);
     }
 
     protected LocationAlarm(Parcel in)
@@ -45,9 +50,10 @@ public class LocationAlarm implements Parcelable
         this.address = in.readString();
         this.radius = in.readInt();
         this.status = in.readInt();
+        this.alarmId = in.readInt();
     }
 
-    public static final Creator<LocationAlarm> CREATOR = new Creator<LocationAlarm>()
+    public static final Parcelable.Creator<LocationAlarm> CREATOR = new Parcelable.Creator<LocationAlarm>()
     {
         @Override
         public LocationAlarm createFromParcel(Parcel source)
