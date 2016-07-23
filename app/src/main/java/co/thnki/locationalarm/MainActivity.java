@@ -21,7 +21,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.NativeExpressAdView;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -39,7 +39,6 @@ import co.thnki.locationalarm.pojos.LocationAlarm;
 import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
-import co.thnki.locationalarm.utils.ImageUtil;
 import co.thnki.locationalarm.utils.LocationUtil;
 
 public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOffsetChangedListener
@@ -53,8 +52,6 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
 
     @Bind(R.id.mapAdView)
     RelativeLayout mMapAdView;
-
-    private AdView mAdView;
 
     @Bind(R.id.descriptionText)
     TextView mDescriptionText;
@@ -94,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     @BindString(R.string.tapToViewMap)
     String mTapToViewTheMap;
     private SharedPreferences mPreferences;
+    private NativeExpressAdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -111,9 +109,9 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
 
     private void initializeMapAd()
     {
-        mAdView = new AdView(this);
-        mAdView.setAdSize(new AdSize(ImageUtil.getAdWidth(this) - 40, 50));
-        mAdView.setAdUnitId(mPreferences.getString(RemoteConfigService.AD_UNIT_ID + 1, "ca-app-pub-9949935976977846/1773589219"));
+        mAdView = new NativeExpressAdView(this);
+        mAdView.setAdSize(new AdSize(320, 80));
+        mAdView.setAdUnitId(mPreferences.getString(RemoteConfigService.AD_UNIT_ID + 1, "ca-app-pub-9949935976977846/4866656411"));
 
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout
                 .LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,

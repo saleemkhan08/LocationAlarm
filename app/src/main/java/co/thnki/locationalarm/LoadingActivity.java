@@ -38,7 +38,7 @@ public class LoadingActivity extends AppCompatActivity
             public void run()
             {
                 Log.d("LagIssue", "Launching MainActivity : loading");
-                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(LoadingActivity.this, null);
+                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(LoadingActivity.this);
                 Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
                 startActivity(intent, activityOptionsCompat.toBundle());
             }
