@@ -22,12 +22,9 @@ import co.thnki.locationalarm.pojos.LocationAlarm;
 import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.services.LocationTrackingService;
 import co.thnki.locationalarm.singletons.Otto;
-import co.thnki.locationalarm.utils.ConnectivityUtil;
 import co.thnki.locationalarm.utils.LocationUtil;
 import co.thnki.locationalarm.viewholders.AdViewHolder;
 import co.thnki.locationalarm.viewholders.ContentViewHolder;
-
-import static java.lang.Math.abs;
 
 public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 {
@@ -72,7 +69,7 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public int getItemViewType(int position)
     {
-        int posType = (position - 1) % 5;
+        /*int posType = (position - 1) % 5;
 
         if (!isAdInserted)
         {
@@ -86,7 +83,9 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             default:
                 Log.d("GetItemType", posType + " : CONTENT_VIEW : Pos : " + position);
                 return CONTENT_VIEW;
-        }
+        }*/
+
+        return CONTENT_VIEW;
     }
 
     @Override
@@ -199,6 +198,7 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Subscribe
     public void onInternetConnected(String action)
     {
+        Log.d("ConnectivityListener", "onInternetConnected : adapter : " + action );
         switch (action)
         {
             case InternetConnectivityListener.INTERNET_CONNECTED:
@@ -224,7 +224,9 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     private void insertAdSpace(ArrayList<LocationAlarm> alarmList)
     {
-        isAdInserted = false;
+        mAlarmPlusAdList = alarmList;
+
+       /* isAdInserted = false;
         mAlarmPlusAdList = new ArrayList<>();
         if (!ConnectivityUtil.isConnected(mActivity))
         {
@@ -254,6 +256,6 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     }
                 }
             }
-        }
+        }*/
     }
 }

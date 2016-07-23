@@ -79,8 +79,6 @@ public class LocationAlarmListFragment extends Fragment
         mLocationAlarmList.setAdapter(mExpressNativeAdAdapter);
         mLocationAlarmList.setLayoutManager(new LinearLayoutManager(mActivity));
         mExpressNativeAdAdapter.updateList(mAlarmList);
-
-        loadEmptyListAd();
         return parentView;
     }
 
@@ -93,7 +91,7 @@ public class LocationAlarmListFragment extends Fragment
 
     private void loadEmptyListAd()
     {
-        AdViewHolder holder = new AdViewHolder(adCardView);
+        new AdViewHolder(adCardView);
     }
 
     @Subscribe
@@ -121,6 +119,8 @@ public class LocationAlarmListFragment extends Fragment
         }
     }
 
+
+
     private void hideEmptyListString()
     {
         TransitionUtil.defaultTransition(emptyList);
@@ -131,6 +131,7 @@ public class LocationAlarmListFragment extends Fragment
     {
         TransitionUtil.defaultTransition(emptyList);
         emptyList.setVisibility(View.VISIBLE);
+        loadEmptyListAd();
     }
 
     @Override

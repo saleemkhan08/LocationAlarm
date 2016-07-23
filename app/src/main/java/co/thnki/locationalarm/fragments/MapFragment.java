@@ -49,7 +49,6 @@ import butterknife.BindDrawable;
 import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import co.thnki.locationalarm.MainActivity;
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
 import co.thnki.locationalarm.interfaces.GeoCodeListener;
@@ -708,7 +707,7 @@ public class MapFragment extends SupportMapFragment implements
     {
         Log.d("MapFragmentFlowLogs", "onLocationChanged : moveCameraToMyLocOnLocUpdate : " + moveCameraToMyLocOnLocUpdate);
         setCameraPosition(location);
-        if (moveCameraToMyLocOnLocUpdate)
+        if (mTravelModeOn)
         {
             showMyLocOnMap(true);
         }
@@ -979,6 +978,7 @@ public class MapFragment extends SupportMapFragment implements
     @Subscribe
     public void onDismiss(String action)
     {
+        Log.d("ConnectivityListener", "onInternetConnected : map fragment : " + action );
         switch (action)
         {
             case DIALOG_DISMISS:

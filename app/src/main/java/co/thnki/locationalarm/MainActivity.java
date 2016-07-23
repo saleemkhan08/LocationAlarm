@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     String mTapToViewTheMap;
     private SharedPreferences mPreferences;
     private NativeExpressAdView mAdView;
+    private LocationAlarmListFragment mLocationAlarmListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
         initializeAppBarLayout();
         initializeAppIndexing();
         initializeMapAd();
+
     }
 
     private void initializeMapAd()
@@ -165,9 +167,9 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     private void addAlarmListFragment(FragmentManager manager)
     {
         Log.d("LagIssue", "addAlarmListFragment  : MainActivity");
-        LocationAlarmListFragment fragment = new LocationAlarmListFragment();
+        mLocationAlarmListFragment = new LocationAlarmListFragment();
         manager.beginTransaction()
-                .replace(R.id.alarmListContainer, fragment, LOCATION_ALARM_LIST_FRAGMENT)
+                .replace(R.id.alarmListContainer, mLocationAlarmListFragment, LOCATION_ALARM_LIST_FRAGMENT)
                 .commit();
     }
 
@@ -195,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     {
         super.onResume();
         //setCollapsingToolBarHeight();
-        loadAd();
+        //loadAd();
     }
 
     @Override
@@ -234,10 +236,6 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
                 Otto.post(MapFragment.DIALOG_DISMISS);
                 mDescriptionText.setText(mTapToViewTheList);
                 isCollapsed = true;
-                /*if(!ConnectivityUtil.isConnected(this))
-                {
-                    mAlarmAdapter.removeAd();
-                }*/
                 scrollUp.setImageResource(R.mipmap.scroll_up);
             }
         }
@@ -283,10 +281,11 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     @Subscribe
     public void onInternetConnected(String action)
     {
+        Log.d("ConnectivityListener", "onInternetConnected : main activity : " + action );
         switch (action)
         {
             case InternetConnectivityListener.INTERNET_CONNECTED:
-                loadAd();
+                //loadAd();
                 break;
         }
     }

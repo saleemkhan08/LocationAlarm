@@ -21,7 +21,7 @@ public class InternetConnectivityListener extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        Log.d("LagIssue", "onReceive  : InternetConnectivityListener");
+        Log.d("ConnectivityListener", "onReceive" );
         if (intent.getExtras() != null)
         {
             if (ConnectivityUtil.isConnected(context))

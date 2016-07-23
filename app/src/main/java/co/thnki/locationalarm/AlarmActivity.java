@@ -30,6 +30,8 @@ import co.thnki.locationalarm.singletons.Otto;
 import co.thnki.locationalarm.utils.LocationUtil;
 import co.thnki.locationalarm.view.RippleBackground;
 
+import static android.R.attr.action;
+
 public class AlarmActivity extends AppCompatActivity
 {
 
@@ -133,6 +135,7 @@ public class AlarmActivity extends AppCompatActivity
     @Subscribe
     public void onInternetConnectivityChange(String status)
     {
+        Log.d("ConnectivityListener", "onInternetConnected : Alarm activity : " + action );
         switch (status)
         {
             case InternetConnectivityListener.INTERNET_CONNECTED :

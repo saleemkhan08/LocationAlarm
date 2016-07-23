@@ -44,7 +44,7 @@ public class RemoteConfigService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Log.d(TAG, "onStartCommand");
+        Log.d("ConnectivityListener", "RemoteConfigService : onStartCommand" );
         mFireBaseRemoteConfig = FirebaseRemoteConfig.getInstance();
 
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()

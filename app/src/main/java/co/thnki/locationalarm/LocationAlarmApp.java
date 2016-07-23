@@ -1,20 +1,50 @@
 package co.thnki.locationalarm;
 
 import android.content.Context;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.multidex.MultiDexApplication;
+import android.util.Log;
 import android.widget.Toast;
+
+import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 
 public class LocationAlarmApp extends MultiDexApplication
 {
     private static Context context;
+    private InternetConnectivityListener mReceiver;
     @Override
     public void onCreate()
     {
         super.onCreate();
         context = this.getApplicationContext();
+        if(Build.VERSION.SDK_INT > 23)
+        {
+            registerInternetConnectionReceiver();
+        }
+    }
+
+    @Override
+    public void onTerminate()
+    {
+        super.onTerminate();
+        if(Build.VERSION.SDK_INT > 23)
+        {
+            unregisterReceiver(mReceiver);
+            Log.d("ConnectivityListener", "un - Registered" );
+        }
+    }
+
+    private void registerInternetConnectionReceiver()
+    {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.net.conn.CONNECTIVITY_CHANGE");
+        mReceiver = new InternetConnectivityListener();
+        registerReceiver(mReceiver, filter);
+        Log.d("ConnectivityListener", "Registered" );
     }
 
     public static SharedPreferences getPreferences()
@@ -34,4 +64,6 @@ public class LocationAlarmApp extends MultiDexApplication
     {
         return context;
     }
+
+
 }
