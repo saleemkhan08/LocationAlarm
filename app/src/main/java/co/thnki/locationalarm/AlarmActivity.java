@@ -27,7 +27,6 @@ import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.services.AlarmAudioService;
 import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
-import co.thnki.locationalarm.utils.ImageUtil;
 import co.thnki.locationalarm.utils.LocationUtil;
 import co.thnki.locationalarm.view.RippleBackground;
 
@@ -39,7 +38,7 @@ public class AlarmActivity extends AppCompatActivity
 
     @Bind(R.id.alarmAdView)
     RelativeLayout mAlarmAdView;
-    NativeExpressAdView mNativeAdView;
+    private NativeExpressAdView mNativeAdView;
 
     @Bind(R.id.card_view)
     CardView nativeAdViewWrapper;
@@ -70,7 +69,8 @@ public class AlarmActivity extends AppCompatActivity
         message.setText(LocationUtil.getAddressLines(alarm.address, 3));
         //TODO update the current AdUnitId
         mNativeAdView = new NativeExpressAdView(this);
-        mNativeAdView.setAdSize(new AdSize(ImageUtil.getAdWidth(this) - 40,150));
+
+        mNativeAdView.setAdSize(new AdSize(320,150));
         mNativeAdView.setAdUnitId(mPreferences.getString(RemoteConfigService.AD_UNIT_ID+"3","ca-app-pub-9949935976977846/4727055612"));
         mAlarmAdView.addView(mNativeAdView);
 

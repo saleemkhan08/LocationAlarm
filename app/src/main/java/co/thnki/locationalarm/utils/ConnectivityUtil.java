@@ -1,17 +1,11 @@
 package co.thnki.locationalarm.utils;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
-import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.interfaces.ConnectivityListener;
@@ -89,25 +83,5 @@ public class ConnectivityUtil
             }
         }
     }
-
-    public static boolean isGoogleServicesOk(AppCompatActivity mActivity)
-    {
-        int isAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(mActivity);
-        if (isAvailable == ConnectionResult.SUCCESS)
-        {
-            return true;
-        }
-        else if (GooglePlayServicesUtil.isUserRecoverableError(isAvailable))
-        {
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(isAvailable, mActivity, GPS_ERROR_DIALOG_REQUEST);
-            dialog.show();
-        }
-        else
-        {
-            Toast.makeText(mActivity, "Can't Connect to Google Play Services", Toast.LENGTH_SHORT).show();
-        }
-        return false;
-    }
-
 }
 

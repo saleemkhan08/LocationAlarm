@@ -6,23 +6,29 @@
     >
 
     <LinearLayout
-        android:id="@+id/emptyList"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:id="@+id/emptyList"
+        android:orientation="vertical"
         android:visibility="gone"
-        >
-
-        <TextView
-            android:id="@+id/emptyListTextView"
-            style="@style/emptyList"
-            android:text="@string/noLocationAlarmsAreSet"
-            />
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            >
+            <TextView
+                android:id="@+id/emptyListTextView"
+                style="@style/emptyList"
+                android:text="@string/noLocationAlarmsAreSet"
+                />
+        </LinearLayout>
+        <include layout="@layout/ad_row"/>
     </LinearLayout>
 
-    <co.thnki.locationalarm.view.CustomRecyclerView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/locationAlarmList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#eee"
         android:paddingBottom="10dp"/>
 
 </LinearLayout>

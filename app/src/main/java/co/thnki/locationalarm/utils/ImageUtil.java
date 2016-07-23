@@ -6,14 +6,14 @@ import android.util.DisplayMetrics;
 
 public class ImageUtil
 {
-    private static int pixels(Context mContext, double dp)
+    public static int pixels(Context mContext, double dp)
     {
         DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
         double pixels = metrics.density * dp;
         return (int) pixels;
     }
 
-    private static int dp(Context mContext, double pixels)
+    public static int dp(Context mContext, double pixels)
     {
         DisplayMetrics metrics = mContext.getResources().getDisplayMetrics();
         double dp = pixels/metrics.density;
