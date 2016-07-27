@@ -86,6 +86,7 @@ class WBDataBase
         return db.query(tableName, columns, selection, selectionArgs, groupBy, null, orderBy, null);
     }
 
+    @SuppressWarnings("unused")
     Cursor query(String query)
     {
         return db.rawQuery(query, null);

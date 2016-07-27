@@ -7,7 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.util.Log;
@@ -49,6 +49,7 @@ import butterknife.BindDrawable;
 import butterknife.BindString;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import co.thnki.locationalarm.LocationAlarmApp;
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
 import co.thnki.locationalarm.interfaces.GeoCodeListener;
@@ -60,8 +61,8 @@ import co.thnki.locationalarm.utils.GeoCoderTask;
 import co.thnki.locationalarm.utils.LocationUtil;
 import co.thnki.locationalarm.utils.MarkerAndCirclesUtil;
 import co.thnki.locationalarm.utils.PermissionUtil;
-import co.thnki.locationalarm.utils.TouchableWrapper;
 import co.thnki.locationalarm.utils.TransitionUtil;
+import co.thnki.locationalarm.view.TouchableWrapper;
 
 import static co.thnki.locationalarm.utils.LocationUtil.distFrom;
 
@@ -71,6 +72,8 @@ public class MapFragment extends SupportMapFragment implements
         GoogleMap.OnCameraChangeListener, OnMapReadyCallback
 {
     public static final String DIALOG_DISMISS = "dialogDismiss";
+    public static final String TURN_OFF_TRAVEL_MODE = "turnOffTravelMode";
+    public static final String TURN_ON_TRAVEL_MODE = "turnOnTravelMode";
 
     @BindString(R.string.noInternet)
     String NO_INTERNET;
@@ -78,16 +81,16 @@ public class MapFragment extends SupportMapFragment implements
     private View mOriginalContentView;
     private int searchBarMargin;
     public boolean isSubmitButtonShown;
-    public static final String LATITUDE = "LATITUDE";
-    public static final String LONGITUDE = "LONGITUDE";
-    public static final String ZOOM = "ZOOM";
-    public static final String TILT = "TILT";
-    public static final String BEARING = "BEARING";
+    private static final String LATITUDE = "LATITUDE";
+    private static final String LONGITUDE = "LONGITUDE";
+    private static final String ZOOM = "ZOOM";
+    private static final String TILT = "TILT";
+    private static final String BEARING = "BEARING";
 
-    public static final String MAP_TYPE = "mapType";
+    private static final String MAP_TYPE = "mapType";
     private static final String KEY_TRAVELLING_MODE_DISP_COUNTER = "KEY_TRAVELLING_MODE_DISP_COUNTER";
-    public static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 91;
-    public static final String ACCURACY = "ACCURACY";
+    private static final int PLACE_AUTOCOMPLETE_REQUEST_CODE = 91;
+    private static final String ACCURACY = "ACCURACY";
 
     private Marker myLocMarker;
     private Circle myLocCircle;
@@ -96,12 +99,13 @@ public class MapFragment extends SupportMapFragment implements
 
     private AppCompatActivity mActivity;
 
-    private static SharedPreferences preferences;
+    private SharedPreferences mPreferences;
 
-
-    private static boolean mTravelModeOn;
     @BindColor(R.color.travel_mode)
     int travelModeColor;
+
+    @Bind(R.id.searchWaitProgress)
+    RelativeLayout mSearchWaitProgress;
 
     @BindColor(R.color.colorAccent)
     int accentColor;
@@ -148,18 +152,16 @@ public class MapFragment extends SupportMapFragment implements
     @Bind(R.id.select_location)
     View select_location;
 
-//---------------------------------------------------------
-
     @Bind(R.id.searchIcon)
     ImageView searchIcon;
 
-    private static int retryAttemptsCount;
+    private int mRetryAttemptsCount;
     private GeoCoderTask mGeoCoderTask;
-    private LatLng mGeoCodeLatLng, mOnActionDownLatLng;
-    private int radiusType;
-    private float currentZoom;
-    private boolean moveCameraToMyLocOnLocUpdate;
-    private boolean isPlacesApiResult;
+    private LatLng mGeoCodeLatLng;
+    private LatLng mOnActionDownLatLng;
+    private int mRadiusType;
+    private float mCurrentZoom;
+    private boolean mIsPlacesApiResult;
     private MarkerAndCirclesUtil mMarkerAndCircle;
     private Circle mActionCircle;
 
@@ -171,14 +173,13 @@ public class MapFragment extends SupportMapFragment implements
 
     @BindDrawable(R.drawable.plus_white)
     Drawable mAddIcon;
+    private static boolean travelModeOffHelpTextShown;
 
-    //Implementation done
     public MapFragment()
     {
         Log.d("MapFragmentFlowLogs", "Constructor");
     }
 
-    //Implementation done
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState)
     {
@@ -186,11 +187,9 @@ public class MapFragment extends SupportMapFragment implements
         mOriginalContentView = super.onCreateView(inflater, parent, savedInstanceState);
         TouchableWrapper mTouchView = new TouchableWrapper(getActivity(), this);
         mTouchView.addView(mOriginalContentView);
-        moveCameraToMyLocOnLocUpdate = true;
         return mTouchView;
     }
 
-    //Implementation done
     @Override
     public void onActivityCreated(Bundle savedInstanceState)
     {
@@ -198,12 +197,7 @@ public class MapFragment extends SupportMapFragment implements
         Log.d("MapFragmentFlowLogs", "onActivityCreated");
         mActivity = (AppCompatActivity) getActivity();
         ButterKnife.bind(this, mActivity);
-        mTravelModeOn = false;
-        preferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
-        preferences.edit()
-                .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
-                .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
-                .apply();
+        mPreferences = LocationAlarmApp.getPreferences();
         startLocationTrackingService();
         Log.d("MapFragmentFlowLogs", "Start Service Called");
 
@@ -217,8 +211,10 @@ public class MapFragment extends SupportMapFragment implements
     {
         super.onResume();
         Otto.register(this);
+        mSearchWaitProgress.setVisibility(View.GONE);
         Log.d("MapFragmentFlowLogs", "onResume");
         getMapAsync(this);
+        changeTravelModeState(false, false);
     }
 
     @Override
@@ -232,13 +228,16 @@ public class MapFragment extends SupportMapFragment implements
             mGoogleMap.setMyLocationEnabled(false);
         }
         mGoogleMap.setOnCameraChangeListener(this);
-        if (isPlacesApiResult)
+        if (mIsPlacesApiResult)
         {
-            isPlacesApiResult = false;
+            mIsPlacesApiResult = false;
         }
         else
         {
             showMyLocOnMap(false);
+            boolean isTravelModeOn = mPreferences.getBoolean(LocationTrackingService.KEY_ALARM_SET, false) ||
+                    mPreferences.getBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false);
+            changeTravelModeState(isTravelModeOn, false);
         }
     }
 
@@ -294,7 +293,7 @@ public class MapFragment extends SupportMapFragment implements
                 {
                     public boolean onMenuItemClick(MenuItem item)
                     {
-                        radiusType = item.getItemId();
+                        mRadiusType = item.getItemId();
                         setRadiusSeekBarValue();
                         return true;
                     }
@@ -308,7 +307,7 @@ public class MapFragment extends SupportMapFragment implements
     {
         String radiusSeekBarText;
         int radius = getSeekBarValue();
-        switch (radiusType)
+        switch (mRadiusType)
         {
             case R.id.radius_km:
                 radiusSeekBarText = radius + getText(R.string.kilometer).toString();
@@ -328,6 +327,7 @@ public class MapFragment extends SupportMapFragment implements
         drawCircleOnMap();
     }
 
+    @SuppressWarnings("WeakerAccess")
     @OnClick(R.id.submitButton)
     public void alarmButton()
     {
@@ -358,7 +358,7 @@ public class MapFragment extends SupportMapFragment implements
         }
         else
         {
-            Toast.makeText(mActivity, NO_INTERNET, Toast.LENGTH_SHORT).show();
+            toast(NO_INTERNET);
         }
     }
 
@@ -388,10 +388,11 @@ public class MapFragment extends SupportMapFragment implements
     public void onStop()
     {
         super.onStop();
-        Log.d("MapFragmentFlowLogs", "onStop");
         mMarkerAndCircle.unregister();
         Otto.unregister(this);
         cancelAsyncTask(mGeoCoderTask);
+        mSearchWaitProgress.setVisibility(View.GONE);
+        Log.d("mSearchWaitProgress", "gone");
     }
 
     private void setUpMyLocationButton()
@@ -401,11 +402,17 @@ public class MapFragment extends SupportMapFragment implements
             @Override
             public void onClick(View v)
             {
-                moveCameraToMyLocOnLocUpdate = true;
                 showTravellingModeHint();
                 startLocationTrackingService();
-                Log.d("MapFragmentFlowLogs", "My Loc : onClick");
                 showMyLocOnMap(true);
+                int dispCnt = mPreferences.getInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 0);
+                if (dispCnt < 5)
+                {
+                    mPreferences.edit()
+                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, ++dispCnt)
+                            .apply();
+                    toast(getString(R.string.travel_mode_helptext));
+                }
             }
         });
 
@@ -414,66 +421,66 @@ public class MapFragment extends SupportMapFragment implements
             @Override
             public boolean onLongClick(View v)
             {
-                moveCameraToMyLocOnLocUpdate = true;
-                Log.d("MapFragmentFlowLogs", "My Loc onLongClick");
                 showMyLocOnMap(true);
-                if (!mTravelModeOn)
+                if (!getTravelMode())
                 {
-                    Toast.makeText(mActivity, "Travelling Mode : On", Toast.LENGTH_SHORT).show();
-                    mTravelModeOn = true;
-                    updateTravellingModeUI();
+                    changeTravelModeState(true, true);
                     showTravellingModeHint();
-                    preferences.edit()
-                            .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, true)
-                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 6)
+                    mPreferences.edit()
+                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 5)
                             .apply();
                     startLocationTrackingService();
                 }
                 else
                 {
-                    Toast.makeText(mActivity, "Travelling Mode : Off", Toast.LENGTH_SHORT).show();
-                    mTravelModeOn = false;
-                    updateTravellingModeUI();
-                    preferences.edit()
-                            .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 9)
-                            .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false)
-                            .apply();
+                    changeTravelModeState(false, true);
                     Otto.post(LocationTrackingService.STOP_SERVICE);
                 }
                 return true;
             }
         });
-        updateTravellingModeUI();
     }
 
-    private void updateTravellingModeUI()
+    private void changeTravelModeState(boolean state, boolean showToast)
     {
+        mPreferences.edit()
+                .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, state)
+                .apply();
 
-        if (mTravelModeOn)
+        String toast = getString(R.string.travel_mode_off);
+
+        if (state)
         {
+            toast = getString(R.string.travel_mode_on);
             buttonMyLoc.setColorNormal(travelModeColor);
             buttonMyLoc.setColorPressedResId(R.color.travel_mode_pressed);
+
         }
         else
         {
             buttonMyLoc.setColorNormal(accentColor);
             buttonMyLoc.setColorPressedResId(R.color.colorAccentPressed);
         }
+
+        if (showToast)
+        {
+            toast(toast);
+        }
     }
 
     private void showTravellingModeHint()
     {
-        int travellingModeInfoCounter = preferences.getInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 0);
+        int travellingModeInfoCounter = mPreferences.getInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 0);
         if (travellingModeInfoCounter < 5)
         {
-            Toast.makeText(mActivity, "Click and hold to turn \"On\" Travelling Mode", Toast.LENGTH_SHORT).show();
-            preferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
+            toast("Click and hold to turn \"On\" Travelling Mode");
+            mPreferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
                     , ++travellingModeInfoCounter).apply();
         }
         else if (travellingModeInfoCounter > 5 && travellingModeInfoCounter < 8)
         {
-            Toast.makeText(mActivity, "Click and hold to turn \"Off\" Travelling Mode", Toast.LENGTH_SHORT).show();
-            preferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
+            toast("Click and hold to turn \"Off\" Travelling Mode");
+            mPreferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
                     , ++travellingModeInfoCounter).apply();
         }
     }
@@ -521,30 +528,31 @@ public class MapFragment extends SupportMapFragment implements
             toast("Alarm Set : \n" + searchText.getText());
             hideSubmitButtonAndShowAddButton();
             Otto.post(LocationAlarmListFragment.RELOAD_LIST);
+            changeTravelModeState(true, false);
         }
     }
 
 
-    private static CameraPosition getCameraPos(LatLng latLng)
+    private CameraPosition getCameraPos(LatLng latLng)
     {
         return new CameraPosition(latLng, getZoom(), getTilt(), getBearing());
     }
 
-    private static LatLng getLatLng()
+    private LatLng getLatLng()
     {
-        double latitude = Double.parseDouble(preferences.getString(LATITUDE, "12.9667"));
-        double longitude = Double.parseDouble(preferences.getString(LONGITUDE, "77.5667"));
+        double latitude = Double.parseDouble(mPreferences.getString(LATITUDE, "12.9667"));
+        double longitude = Double.parseDouble(mPreferences.getString(LONGITUDE, "77.5667"));
         return new LatLng(latitude, longitude);
     }
 
-    private static float getBearing()
+    private float getBearing()
     {
-        return preferences.getFloat(BEARING, 0);
+        return mPreferences.getFloat(BEARING, 0);
     }
 
-    private static float getZoom()
+    private float getZoom()
     {
-        float zoom = preferences.getFloat(ZOOM, 16);
+        float zoom = mPreferences.getFloat(ZOOM, 16);
         if (zoom < 3)
         {
             zoom = 16;
@@ -552,14 +560,14 @@ public class MapFragment extends SupportMapFragment implements
         return zoom;
     }
 
-    private static float getTilt()
+    private float getTilt()
     {
-        return preferences.getFloat(TILT, 0);
+        return mPreferences.getFloat(TILT, 0);
     }
 
     private float getAccuracy()
     {
-        return preferences.getFloat(ACCURACY, 500);
+        return mPreferences.getFloat(ACCURACY, 500);
     }
 
     private void setCamera(CameraUpdate update, boolean animate)
@@ -574,9 +582,9 @@ public class MapFragment extends SupportMapFragment implements
         }
     }
 
-    private void setCameraPosition(Location location)
+    private void saveLocation(Location location)
     {
-        preferences.edit().putString(LATITUDE, "" + location.getLatitude())
+        mPreferences.edit().putString(LATITUDE, "" + location.getLatitude())
                 .putString(LONGITUDE, "" + location.getLongitude())
                 .putFloat(ACCURACY, location.getAccuracy())
                 .apply();
@@ -590,7 +598,7 @@ public class MapFragment extends SupportMapFragment implements
 
     private void setMapType()
     {
-        int mapType = Integer.parseInt(preferences.getString(MAP_TYPE, "1"));
+        int mapType = Integer.parseInt(mPreferences.getString(MAP_TYPE, "1"));
         if (mGoogleMap.getMapType() != mapType)
         {
             mGoogleMap.setMapType(mapType);
@@ -600,7 +608,7 @@ public class MapFragment extends SupportMapFragment implements
     private int getSeekBarValue()
     {
         int progress = radiusSeekBar.getProgress() + 1;
-        switch (radiusType)
+        switch (mRadiusType)
         {
             case R.id.radius_fts:
                 return progress * 100;
@@ -649,6 +657,18 @@ public class MapFragment extends SupportMapFragment implements
     }
 
     @Override
+    public void onScroll()
+    {
+        changeTravelModeState(false, true);
+    }
+
+    @Override
+    public void onDrag()
+    {
+        changeTravelModeState(false, true);
+    }
+
+    @Override
     public void onActionDown()
     {
         mOnActionDownLatLng = mGeoCodeLatLng;
@@ -677,8 +697,8 @@ public class MapFragment extends SupportMapFragment implements
             case PLACE_AUTOCOMPLETE_REQUEST_CODE:
                 Place place = PlaceAutocomplete.getPlace(mActivity, data);
                 Log.d("PlacesApi", "" + place);
-                isPlacesApiResult = true;
-                moveCameraToMyLocOnLocUpdate = false;
+                mIsPlacesApiResult = true;
+
                 switch (resultCode)
                 {
                     case Activity.RESULT_OK:
@@ -692,7 +712,7 @@ public class MapFragment extends SupportMapFragment implements
                         break;
                     case PlaceAutocomplete.RESULT_ERROR:
                         Log.d("PlacesApi", "RESULT_ERROR");
-                        Toast.makeText(mActivity, UNKNOWN_PLACE, Toast.LENGTH_SHORT).show();
+                        toast(UNKNOWN_PLACE);
                         break;
                     case Activity.RESULT_CANCELED:
                         Log.d("PlacesApi", "RESULT_CANCELED");
@@ -705,11 +725,35 @@ public class MapFragment extends SupportMapFragment implements
     @Subscribe
     public void onLocationChanged(Location location)
     {
-        Log.d("MapFragmentFlowLogs", "onLocationChanged : moveCameraToMyLocOnLocUpdate : " + moveCameraToMyLocOnLocUpdate);
-        setCameraPosition(location);
-        if (mTravelModeOn)
+        saveLocation(location);
+        double dist = distFrom(mGeoCodeLatLng, getLatLng());
+        if(dist < 30)
         {
             showMyLocOnMap(true);
+        }
+        else if (getTravelMode())
+        {
+            showMyLocOnMap(true);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    if (!travelModeOffHelpTextShown)
+                    {
+                        travelModeOffHelpTextShown = true;
+                        if(getTravelMode())
+                        {
+                            toast(getString(R.string.travel_mode_off_helptext));
+                        }
+                    }
+                }
+            }, 5000);
+        }
+        else
+        {
+            showMyLocationMarkerAndCircle(getLatLng(), location.getAccuracy());
         }
     }
 
@@ -741,13 +785,10 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onCameraChange(CameraPosition cameraPosition)
     {
-        double dist = distFrom(cameraPosition.target, getLatLng());
-        currentZoom = cameraPosition.zoom;
+        mCurrentZoom = cameraPosition.zoom;
         mGeoCodeLatLng = cameraPosition.target;
-        moveCameraToMyLocOnLocUpdate = dist < 100;
         updateLocationInfo();
-        retryAttemptsCount = 0;
-        Log.d("MapFragmentFlowLogs", "Circle : isSubmitButtonShown : " + isSubmitButtonShown + ", Dist : " + dist);
+        mRetryAttemptsCount = 0;
         if (isSubmitButtonShown)
         {
             drawCircleOnMap();
@@ -765,7 +806,7 @@ public class MapFragment extends SupportMapFragment implements
     private int getRadiusInMeter()
     {
         int radius = getSeekBarValue();
-        switch (radiusType)
+        switch (mRadiusType)
         {
             case R.id.radius_fts:
                 return (int) Math.floor(radius / 3.28084);
@@ -789,6 +830,7 @@ public class MapFragment extends SupportMapFragment implements
                 .center(latLng));
     }
 
+    @SuppressWarnings("UnusedAssignment")
     private void setZoomLevel(int radius)
     {
         double zoom = 16;
@@ -841,9 +883,9 @@ public class MapFragment extends SupportMapFragment implements
             zoom = 10;
         }
 
-        if (!isCurrentZoomSetByUser(currentZoom))
+        if (!isCurrentZoomSetByUser(mCurrentZoom))
         {
-            if (zoom != currentZoom)
+            if (zoom != mCurrentZoom)
             {
                 if (mGoogleMap != null && mGeoCodeLatLng != null)
                 {
@@ -879,14 +921,14 @@ public class MapFragment extends SupportMapFragment implements
                     showSearchProgress();
                     cancelAsyncTask(mGeoCoderTask);
                     mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
-                    mGeoCoderTask.execute(retryAttemptsCount++);
+                    mGeoCoderTask.execute(mRetryAttemptsCount++);
                 }
             }
             else
             {
                 showSearchProgress();
                 mGeoCoderTask = new GeoCoderTask(mActivity, mGeoCodeLatLng, this);
-                mGeoCoderTask.execute(retryAttemptsCount++);
+                mGeoCoderTask.execute(mRetryAttemptsCount++);
             }
         }
         else
@@ -937,7 +979,7 @@ public class MapFragment extends SupportMapFragment implements
     public void onGeoCodingFailed()
     {
         hideSearchProgress();
-        if (retryAttemptsCount < 10)
+        if (mRetryAttemptsCount < 10)
         {
             updateLocationInfo();
         }
@@ -951,34 +993,46 @@ public class MapFragment extends SupportMapFragment implements
     public void onCancelled()
     {
         hideSearchProgress();
-        retryAttemptsCount = 0;
+        mRetryAttemptsCount = 0;
     }
 
+    @SuppressWarnings("WeakerAccess")
     @OnClick({R.id.searchIcon, R.id.hoverPlaceName, R.id.searchProgress})
     public void searchPlace()
     {
+        changeTravelModeState(false, false);
+        mSearchWaitProgress.setVisibility(View.VISIBLE);
+        Log.d("mSearchWaitProgress", "visible");
         if (PermissionUtil.isConnected(mActivity))
         {
-            try
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable()
             {
-                PlaceAutocomplete.IntentBuilder builder = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN);
-                startActivityForResult(builder.build(mActivity), PLACE_AUTOCOMPLETE_REQUEST_CODE);
-            }
-            catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e)
-            {
-                //TODO
-            }
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        PlaceAutocomplete.IntentBuilder builder = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN);
+                        startActivityForResult(builder.build(mActivity), PLACE_AUTOCOMPLETE_REQUEST_CODE);
+                    }
+                    catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e)
+                    {
+                        Log.d("GooglePlayServices", e.getMessage() + ", should have been handled in Loading activity");
+                    }
+                }
+            }, 500);
         }
         else
         {
-            Toast.makeText(mActivity, NO_INTERNET, Toast.LENGTH_SHORT).show();
+            toast(NO_INTERNET);
         }
     }
 
     @Subscribe
     public void onDismiss(String action)
     {
-        Log.d("ConnectivityListener", "onInternetConnected : map fragment : " + action );
+        Log.d("ConnectivityListener", "onInternetConnected : map fragment : " + action);
         switch (action)
         {
             case DIALOG_DISMISS:
@@ -988,6 +1042,17 @@ public class MapFragment extends SupportMapFragment implements
             case InternetConnectivityListener.INTERNET_CONNECTED:
                 updateLocationInfo();
                 break;
+            case TURN_OFF_TRAVEL_MODE:
+                changeTravelModeState(false, false);
+                break;
+            case TURN_ON_TRAVEL_MODE:
+                changeTravelModeState(true, false);
+                break;
         }
+    }
+
+    private boolean getTravelMode()
+    {
+        return mPreferences.getBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false);
     }
 }

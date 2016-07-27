@@ -19,7 +19,7 @@
           "client_type": 1,
           "android_info": {
             "package_name": "co.thnki.locationalarm",
-            "certificate_hash": "57649986BA02A78D32C58A2776458CBA6582E82D"
+            "certificate_hash": "CCFC361D29CC33FBBEDE02173EF76C3103878AA4"
           }
         },
         {
@@ -29,7 +29,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCm-THrXzYRzOU5xyrq6SZ6kzMuqW8eFKQ"
+          "current_key": "AIzaSyD7gJMHSrQdovIR54YxbnmospkEdiM7KE8"
         }
       ],
       "services": {

@@ -30,4 +30,8 @@
     <string name="turnOnAlarm">Turn on or turn off alarm</string>
     <string name="test_admob_unit_id">ca-app-pub-3940256099942544/3986624511</string>
     <string name="test_admob_express_unit_id">ca-app-pub-3940256099942544/1072772517</string>
+    <string name="travel_mode_helptext">Long Press to turn Travel Mode : On</string>
+    <string name="travel_mode_on">Travel Mode : On</string>
+    <string name="travel_mode_off">Travel Mode : Off</string>
+    <string name="travel_mode_off_helptext">Turn off \"Travel Mode\" to stop auto movement.</string>
 </resources>

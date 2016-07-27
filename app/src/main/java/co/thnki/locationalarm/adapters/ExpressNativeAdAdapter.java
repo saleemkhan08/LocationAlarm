@@ -18,13 +18,17 @@ import java.util.ArrayList;
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
 import co.thnki.locationalarm.fragments.LocationAlarmListFragment;
+import co.thnki.locationalarm.fragments.MapFragment;
 import co.thnki.locationalarm.pojos.LocationAlarm;
 import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.services.LocationTrackingService;
 import co.thnki.locationalarm.singletons.Otto;
+import co.thnki.locationalarm.utils.ConnectivityUtil;
 import co.thnki.locationalarm.utils.LocationUtil;
 import co.thnki.locationalarm.viewholders.AdViewHolder;
 import co.thnki.locationalarm.viewholders.ContentViewHolder;
+
+import static java.lang.Math.abs;
 
 public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 {
@@ -69,7 +73,7 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public int getItemViewType(int position)
     {
-        /*int posType = (position - 1) % 5;
+        int posType = (position - 1) % 5;
 
         if (!isAdInserted)
         {
@@ -83,9 +87,7 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             default:
                 Log.d("GetItemType", posType + " : CONTENT_VIEW : Pos : " + position);
                 return CONTENT_VIEW;
-        }*/
-
-        return CONTENT_VIEW;
+        }
     }
 
     @Override
@@ -163,6 +165,7 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         {
             LocationAlarmDao.update(alarm.alarmId, LocationAlarm.ALARM_ON);
             toast("Alarm Set : \n" + alarm.address);
+            Otto.post(MapFragment.TURN_ON_TRAVEL_MODE);
         }
         else
         {
@@ -224,9 +227,8 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
     private void insertAdSpace(ArrayList<LocationAlarm> alarmList)
     {
-        mAlarmPlusAdList = alarmList;
-
-       /* isAdInserted = false;
+        //mAlarmPlusAdList = alarmList;
+       isAdInserted = false;
         mAlarmPlusAdList = new ArrayList<>();
         if (!ConnectivityUtil.isConnected(mActivity))
         {
@@ -256,6 +258,6 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     }
                 }
             }
-        }*/
+        }
     }
 }

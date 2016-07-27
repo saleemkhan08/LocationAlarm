@@ -1,9 +1,12 @@
-package co.thnki.locationalarm.utils;
+package co.thnki.locationalarm.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
+@SuppressLint("ViewConstructor")
 public class TouchableWrapper extends FrameLayout
 {
     private OnMapTouchListener onMapTouchListener;
@@ -37,14 +40,25 @@ public class TouchableWrapper extends FrameLayout
             case MotionEvent.ACTION_CANCEL:
                 onMapTouchListener.onActionUp();
                 break;
+
+            case MotionEvent.ACTION_SCROLL :
+                onMapTouchListener.onScroll();
         }
         return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onDragEvent(DragEvent event)
+    {
+        onMapTouchListener.onDrag();
+        return true;
     }
 
     public interface OnMapTouchListener
     {
         void onActionUp();
-
+        void onScroll();
+        void onDrag();
         void onActionDown();
     }
 }

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
@@ -38,9 +37,8 @@ public class LoadingActivity extends AppCompatActivity
             public void run()
             {
                 Log.d("LagIssue", "Launching MainActivity : loading");
-                ActivityOptionsCompat activityOptionsCompat = ActivityOptionsCompat.makeSceneTransitionAnimation(LoadingActivity.this);
                 Intent intent = new Intent(LoadingActivity.this, MainActivity.class);
-                startActivity(intent, activityOptionsCompat.toBundle());
+                startActivity(intent);
             }
         }, 500);
     }

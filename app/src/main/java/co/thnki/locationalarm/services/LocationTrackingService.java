@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import co.thnki.locationalarm.AlarmActivity;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
+import co.thnki.locationalarm.fragments.MapFragment;
 import co.thnki.locationalarm.interfaces.SettingsResultListener;
 import co.thnki.locationalarm.pojos.LocationAlarm;
 import co.thnki.locationalarm.receivers.NotificationActionReceiver;
@@ -300,9 +301,14 @@ public class LocationTrackingService extends Service implements LocationListener
 
         if (!allAlarmsStatus)
         {
-            preferences.edit().putBoolean(KEY_ALARM_SET, false).apply();
+            preferences.edit()
+                    .putBoolean(KEY_ALARM_SET, false)
+                    .putBoolean(KEY_TRAVELLING_MODE, false)
+                    .apply();
+            Otto.post(MapFragment.TURN_OFF_TRAVEL_MODE);
             NotificationsUtil.removeNotification(NotificationActionReceiver.NOTIFICATION_ID_LOCATION_ALARMS);
             stopService();
+
         }
         else
         {

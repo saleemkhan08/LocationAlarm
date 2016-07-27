@@ -33,6 +33,7 @@ public class LocationAlarmDao
         mWBDataBase.closeDb();
     }
 
+    @SuppressWarnings("unused")
     public static void delete()
     {
         WBDataBase mWBDataBase = new WBDataBase();

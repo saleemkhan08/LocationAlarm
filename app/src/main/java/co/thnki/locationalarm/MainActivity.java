@@ -80,10 +80,6 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     private MapFragment mMapFragment;
 
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
     private GoogleApiClient client;
     @BindString(R.string.tapToViewList)
     String mTapToViewTheList;
@@ -92,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     String mTapToViewTheMap;
     private SharedPreferences mPreferences;
     private NativeExpressAdView mAdView;
-    private LocationAlarmListFragment mLocationAlarmListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -146,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
 		FragmentManager manager = getSupportFragmentManager();
         addMapFragment(manager);
         addAlarmListFragment(manager);
+
+        TextView title = (TextView) findViewById(R.id.titleText);
+        title.setTypeface(LocationAlarmApp.getTypeFace());
     }
 
     private void initializeAppIndexing()
@@ -167,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     private void addAlarmListFragment(FragmentManager manager)
     {
         Log.d("LagIssue", "addAlarmListFragment  : MainActivity");
-        mLocationAlarmListFragment = new LocationAlarmListFragment();
+        LocationAlarmListFragment mLocationAlarmListFragment = new LocationAlarmListFragment();
         manager.beginTransaction()
                 .replace(R.id.alarmListContainer, mLocationAlarmListFragment, LOCATION_ALARM_LIST_FRAGMENT)
                 .commit();
@@ -196,8 +194,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     protected void onResume()
     {
         super.onResume();
-        //setCollapsingToolBarHeight();
-        //loadAd();
+        loadAd();
     }
 
     @Override
@@ -251,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     }
 
 
+    @SuppressWarnings("WeakerAccess")
     @OnClick(R.id.titleBar)
     public void scrollUp()
     {
@@ -285,21 +283,16 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
         switch (action)
         {
             case InternetConnectivityListener.INTERNET_CONNECTED:
-                //loadAd();
+                loadAd();
                 break;
         }
     }
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction()
+    private Action getIndexApiAction()
     {
         Thing object = new Thing.Builder()
-                .setName("Main Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .setName(getString(R.string.app_name))
+                .setUrl(Uri.parse("http://www.thnki.co"))
                 .build();
         return new Action.Builder(Action.TYPE_VIEW)
                 .setObject(object)
@@ -311,9 +304,6 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     public void onStart()
     {
         super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
         AppIndex.AppIndexApi.start(client, getIndexApiAction());
     }
@@ -322,9 +312,6 @@ public class MainActivity extends AppCompatActivity implements AppBarLayout.OnOf
     public void onStop()
     {
         super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
         AppIndex.AppIndexApi.end(client, getIndexApiAction());
         client.disconnect();
     }

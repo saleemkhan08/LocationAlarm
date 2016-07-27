@@ -1,9 +1,16 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        location_alarm {
+            keyAlias 'whistle_blower'
+            keyPassword 'third.o5'
+            storeFile file('C:/Program Files/location_alarm.jks')
+            storePassword 'third.o5'
+        }
+    }
     compileSdkVersion 24
     buildToolsVersion "23.0.3"
-
     defaultConfig {
         applicationId "co.thnki.locationalarm"
         minSdkVersion 19
@@ -16,6 +23,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.location_alarm
         }
     }
     lintOptions {
@@ -24,8 +32,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     //Fire base Dependencies
     compile 'com.android.support:multidex:1.0.1'
     compile 'com.android.support:appcompat-v7:24.0.0-beta1'
