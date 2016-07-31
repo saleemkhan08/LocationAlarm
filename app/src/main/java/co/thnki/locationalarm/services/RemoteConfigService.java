@@ -126,6 +126,7 @@ public class RemoteConfigService extends Service
         Log.d("UpdateCheckService", "newAppName : " + newAppName);
         Log.d("UpdateCheckService", "notificationText : " + notificationText);
 
+
         long currentTime = System.currentTimeMillis();
         long difference = currentTime - mSharedPreferences.getLong(NOTIFICATION_TIME, 0);
 
