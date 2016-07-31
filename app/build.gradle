@@ -53,5 +53,6 @@ dependencies {
     compile 'com.google.firebase:firebase-config:9.2.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha4'
     testCompile 'junit:junit:4.12'
+    compile 'com.sothree.slidinguppanel:library:3.3.0'
 }
 apply plugin: 'com.google.gms.google-services'

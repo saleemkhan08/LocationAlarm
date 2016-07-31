@@ -58,12 +58,14 @@ import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.services.LocationTrackingService;
 import co.thnki.locationalarm.singletons.Otto;
 import co.thnki.locationalarm.utils.GeoCoderTask;
+import co.thnki.locationalarm.utils.ImageUtil;
 import co.thnki.locationalarm.utils.LocationUtil;
 import co.thnki.locationalarm.utils.MarkerAndCirclesUtil;
 import co.thnki.locationalarm.utils.PermissionUtil;
 import co.thnki.locationalarm.utils.TransitionUtil;
 import co.thnki.locationalarm.view.TouchableWrapper;
 
+import static co.thnki.locationalarm.MainActivity.RELOAD_LIST;
 import static co.thnki.locationalarm.utils.LocationUtil.distFrom;
 
 public class MapFragment extends SupportMapFragment implements
@@ -174,6 +176,11 @@ public class MapFragment extends SupportMapFragment implements
     @BindDrawable(R.drawable.plus_white)
     Drawable mAddIcon;
     private static boolean travelModeOffHelpTextShown;
+    private Toast mRadiusToast;
+    private Toast mAddPhotoToast;
+    private Toast mSelectLocationToast;
+    private boolean mTravelModeUiState;
+    private boolean mIsActionDown;
 
     public MapFragment()
     {
@@ -299,6 +306,7 @@ public class MapFragment extends SupportMapFragment implements
                     }
                 });
                 popup.show();
+                hideToast();
             }
         });
     }
@@ -338,7 +346,73 @@ public class MapFragment extends SupportMapFragment implements
         else
         {
             showSubmitButtonAndHideAddButton();
+            changeTravelModeState(false, false);
+            selectLocationHintToast();
+            setRadiusHintToast();
+            addPhotoHintToast();
         }
+    }
+
+    private void hideToast()
+    {
+        if (mSelectLocationToast != null)
+        {
+            mSelectLocationToast.cancel();
+            mRadiusToast.cancel();
+            mAddPhotoToast.cancel();
+        }
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        hideToast();
+    }
+
+    private void selectLocationHintToast()
+    {
+        LayoutInflater inflater = mActivity.getLayoutInflater();
+        View layout = inflater.inflate(R.layout.select_location_toast,
+                (ViewGroup) mActivity.findViewById(R.id.toastRoot));
+        int xOffset = ImageUtil.pixels(mActivity, mActivity.getResources().getInteger(R.integer.select_location_x_offset));
+        int yOffset = ImageUtil.pixels(mActivity, mActivity.getResources().getInteger(R.integer.select_location_y_offset));
+
+        mSelectLocationToast = new Toast(mActivity);
+        mSelectLocationToast.setGravity(Gravity.CENTER_VERTICAL, xOffset, yOffset);
+        mSelectLocationToast.setDuration(Toast.LENGTH_SHORT);
+        mSelectLocationToast.setView(layout);
+        mSelectLocationToast.show();
+    }
+
+    private void setRadiusHintToast()
+    {
+        LayoutInflater inflater = mActivity.getLayoutInflater();
+        View layout = inflater.inflate(R.layout.set_radius_toast,
+                (ViewGroup) mActivity.findViewById(R.id.toastRoot));
+        int xOffset = ImageUtil.pixels(mActivity, mActivity.getResources().getInteger(R.integer.set_radius_x_offset));
+        int yOffset = ImageUtil.pixels(mActivity, mActivity.getResources().getInteger(R.integer.set_radius_y_offset));
+
+        mRadiusToast = new Toast(mActivity);
+        mRadiusToast.setGravity(Gravity.BOTTOM | Gravity.LEFT, xOffset, yOffset);
+        mRadiusToast.setDuration(Toast.LENGTH_SHORT);
+        mRadiusToast.setView(layout);
+        mRadiusToast.show();
+    }
+
+    private void addPhotoHintToast()
+    {
+        LayoutInflater inflater = mActivity.getLayoutInflater();
+        View layout = inflater.inflate(R.layout.add_photo_toast,
+                (ViewGroup) mActivity.findViewById(R.id.toastRoot));
+
+        int xOffset = ImageUtil.pixels(mActivity, mActivity.getResources().getInteger(R.integer.add_photo_x_offset));
+        int yOffset = ImageUtil.pixels(mActivity, mActivity.getResources().getInteger(R.integer.add_photo_y_offset));
+        mAddPhotoToast = new Toast(mActivity);
+        mAddPhotoToast.setGravity(Gravity.BOTTOM | Gravity.RIGHT, xOffset, yOffset);
+        mAddPhotoToast.setDuration(Toast.LENGTH_SHORT);
+        mAddPhotoToast.setView(layout);
+        mAddPhotoToast.show();
     }
 
     private void showSubmitButtonAndHideAddButton()
@@ -372,6 +446,7 @@ public class MapFragment extends SupportMapFragment implements
         radiusSeekBarInnerWrapper.setVisibility(View.INVISIBLE);
         mTitleBar.setVisibility(View.VISIBLE);
         removeActionCircle();
+        hideToast();
     }
 
     private void removeActionCircle()
@@ -402,7 +477,6 @@ public class MapFragment extends SupportMapFragment implements
             @Override
             public void onClick(View v)
             {
-                showTravellingModeHint();
                 startLocationTrackingService();
                 showMyLocOnMap(true);
                 int dispCnt = mPreferences.getInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 0);
@@ -425,7 +499,6 @@ public class MapFragment extends SupportMapFragment implements
                 if (!getTravelMode())
                 {
                     changeTravelModeState(true, true);
-                    showTravellingModeHint();
                     mPreferences.edit()
                             .putInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 5)
                             .apply();
@@ -443,45 +516,34 @@ public class MapFragment extends SupportMapFragment implements
 
     private void changeTravelModeState(boolean state, boolean showToast)
     {
-        mPreferences.edit()
-                .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, state)
-                .apply();
-
-        String toast = getString(R.string.travel_mode_off);
-
-        if (state)
+        boolean currentState = mPreferences.getBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, false);
+        if (currentState != state || mTravelModeUiState != state)
         {
-            toast = getString(R.string.travel_mode_on);
-            buttonMyLoc.setColorNormal(travelModeColor);
-            buttonMyLoc.setColorPressedResId(R.color.travel_mode_pressed);
+            mPreferences.edit()
+                    .putBoolean(LocationTrackingService.KEY_TRAVELLING_MODE, state)
+                    .apply();
 
-        }
-        else
-        {
-            buttonMyLoc.setColorNormal(accentColor);
-            buttonMyLoc.setColorPressedResId(R.color.colorAccentPressed);
-        }
+            String toast = getString(R.string.travel_mode_off);
 
-        if (showToast)
-        {
-            toast(toast);
-        }
-    }
+            if (state)
+            {
+                toast = getString(R.string.travel_mode_on);
+                buttonMyLoc.setColorNormal(travelModeColor);
+                buttonMyLoc.setColorPressedResId(R.color.travel_mode_pressed);
+                mTravelModeUiState = true;
 
-    private void showTravellingModeHint()
-    {
-        int travellingModeInfoCounter = mPreferences.getInt(KEY_TRAVELLING_MODE_DISP_COUNTER, 0);
-        if (travellingModeInfoCounter < 5)
-        {
-            toast("Click and hold to turn \"On\" Travelling Mode");
-            mPreferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
-                    , ++travellingModeInfoCounter).apply();
-        }
-        else if (travellingModeInfoCounter > 5 && travellingModeInfoCounter < 8)
-        {
-            toast("Click and hold to turn \"Off\" Travelling Mode");
-            mPreferences.edit().putInt(KEY_TRAVELLING_MODE_DISP_COUNTER
-                    , ++travellingModeInfoCounter).apply();
+            }
+            else
+            {
+                buttonMyLoc.setColorNormal(accentColor);
+                buttonMyLoc.setColorPressedResId(R.color.colorAccentPressed);
+                mTravelModeUiState = false;
+            }
+
+            if (showToast)
+            {
+                toast(toast);
+            }
         }
     }
 
@@ -527,7 +589,7 @@ public class MapFragment extends SupportMapFragment implements
             mMarkerAndCircle.addMarkerAndCircle(alarm);
             toast("Alarm Set : \n" + searchText.getText());
             hideSubmitButtonAndShowAddButton();
-            Otto.post(LocationAlarmListFragment.RELOAD_LIST);
+            Otto.post(RELOAD_LIST);
             changeTravelModeState(true, false);
         }
     }
@@ -647,13 +709,12 @@ public class MapFragment extends SupportMapFragment implements
         RelativeLayout.LayoutParams searchBarLayoutParams = (RelativeLayout.LayoutParams) searchBar.getLayoutParams();
         searchBarLayoutParams.topMargin = searchBarMargin;
         searchBar.setLayoutParams(searchBarLayoutParams);
-
         mToolbar.animate().translationY(0).start();
-
         if (isSubmitButtonShown && mOnActionDownLatLng.equals(mGeoCodeLatLng))
         {
             drawCircleOnMap();
         }
+        mIsActionDown = false;
     }
 
     @Override
@@ -671,6 +732,7 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onActionDown()
     {
+        mIsActionDown = true;
         mOnActionDownLatLng = mGeoCodeLatLng;
         TransitionUtil.slideTransition(map_fab_buttons);
         map_fab_buttons.setVisibility(View.GONE);
@@ -711,7 +773,7 @@ public class MapFragment extends SupportMapFragment implements
                         searchText.setText(place.getAddress());
                         break;
                     case PlaceAutocomplete.RESULT_ERROR:
-                        Log.d("PlacesApi", "RESULT_ERROR");
+                        Log.d("PlacesApi", "RESULT_ERROR : " + data);
                         toast(UNKNOWN_PLACE);
                         break;
                     case Activity.RESULT_CANCELED:
@@ -727,7 +789,7 @@ public class MapFragment extends SupportMapFragment implements
     {
         saveLocation(location);
         double dist = distFrom(mGeoCodeLatLng, getLatLng());
-        if(dist < 30)
+        if (dist < 30)
         {
             showMyLocOnMap(true);
         }
@@ -743,10 +805,6 @@ public class MapFragment extends SupportMapFragment implements
                     if (!travelModeOffHelpTextShown)
                     {
                         travelModeOffHelpTextShown = true;
-                        if(getTravelMode())
-                        {
-                            toast(getString(R.string.travel_mode_off_helptext));
-                        }
                     }
                 }
             }, 5000);
@@ -785,6 +843,11 @@ public class MapFragment extends SupportMapFragment implements
     @Override
     public void onCameraChange(CameraPosition cameraPosition)
     {
+        double dist = distFrom(cameraPosition.target, getLatLng());
+        if (dist > 100)
+        {
+            changeTravelModeState(false, true);
+        }
         mCurrentZoom = cameraPosition.zoom;
         mGeoCodeLatLng = cameraPosition.target;
         updateLocationInfo();

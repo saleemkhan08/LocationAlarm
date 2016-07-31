@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import co.thnki.locationalarm.LocationAlarmApp;
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.pojos.NotificationData;
 import co.thnki.locationalarm.receivers.NotificationActionReceiver;
+import co.thnki.locationalarm.singletons.Otto;
 import co.thnki.locationalarm.utils.NotificationsUtil;
 
 public class RemoteConfigService extends Service
@@ -30,6 +32,7 @@ public class RemoteConfigService extends Service
     private static final String NOTIFICATION_TEXT = "notificationText";
     public static final String PACKAGE_NAME = "newAppPkgName";
     private static final String TAG = "UpdateCheckService";
+    private static final String NOTIFICATION_TIME = "notificationTime";
 
     private SharedPreferences mSharedPreferences;
     private FirebaseRemoteConfig mFireBaseRemoteConfig;
@@ -44,11 +47,10 @@ public class RemoteConfigService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Log.d("ConnectivityListener", "RemoteConfigService : onStartCommand" );
+        Log.d("ConnectivityListener", "RemoteConfigService : onStartCommand");
         mFireBaseRemoteConfig = FirebaseRemoteConfig.getInstance();
 
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setDeveloperModeEnabled(BuildConfig.DEBUG)//TODO remove in release apk
                 .build();
 
         mFireBaseRemoteConfig.setConfigSettings(configSettings);
@@ -66,75 +68,115 @@ public class RemoteConfigService extends Service
                         if (task.isSuccessful())
                         {
                             Log.d(TAG, "Fetch Succeeded");
-                            // Once the config is successfully fetched it must be activated before newly fetched
-                            // values are returned.
                             mFireBaseRemoteConfig.activateFetched();
                             onFetched();
                         }
                         else
                         {
-                            Log.d(TAG, "Fetch failed");
+                            Log.d(TAG, "Fetch failed : " + task.toString());
+                            finishJob();
                         }
                     }
                 });
+
+        defaultTask();
         return START_NOT_STICKY;
+    }
+
+    private void finishJob()
+    {
+        if (Build.VERSION.SDK_INT >= 21)
+        {
+            Otto.post(InternetJobService.JOB_FINISHED);
+        }
+        stopSelf();
     }
 
     private void onFetched()
     {
-        String versionName = mFireBaseRemoteConfig.getString(LATEST_VERSION_NAME);
-        String newAppPkgName = mFireBaseRemoteConfig.getString(PACKAGE_NAME);
-        String newAppIcon = mFireBaseRemoteConfig.getString(NEW_APP_ICON);
-        String newAppName = mFireBaseRemoteConfig.getString(NEW_APP_NAME);
-        String notificationText = mFireBaseRemoteConfig.getString(NOTIFICATION_TEXT);
+        mSharedPreferences.edit()
+                .putString(LATEST_VERSION_NAME, mFireBaseRemoteConfig.getString(LATEST_VERSION_NAME))
+                .putString(PACKAGE_NAME, mFireBaseRemoteConfig.getString(PACKAGE_NAME))
+                .putString(NEW_APP_ICON, mFireBaseRemoteConfig.getString(NEW_APP_ICON))
+                .putString(NEW_APP_NAME, mFireBaseRemoteConfig.getString(NEW_APP_NAME))
+                .putString(NOTIFICATION_TEXT, mFireBaseRemoteConfig.getString(NOTIFICATION_TEXT))
+                .putString(AD_UNIT_ID + "1", mFireBaseRemoteConfig.getString("adUnitId1"))
+                .putString(AD_UNIT_ID + "2", mFireBaseRemoteConfig.getString("adUnitId2"))
+                .putString(AD_UNIT_ID + "3", mFireBaseRemoteConfig.getString("adUnitId3"))
+                .apply();
 
-        if (!BuildConfig.VERSION_NAME.equals(versionName))
+        finishJob();
+    }
+
+
+    private void defaultTask()
+    {
+        String versionCode = mSharedPreferences.getString(LATEST_VERSION_NAME, mFireBaseRemoteConfig.getString(LATEST_VERSION_NAME));
+        String newAppPkgName = mSharedPreferences.getString(PACKAGE_NAME, mFireBaseRemoteConfig.getString(PACKAGE_NAME));
+        String newAppIcon = mSharedPreferences.getString(NEW_APP_ICON, mFireBaseRemoteConfig.getString(NEW_APP_ICON));
+        String newAppName = mSharedPreferences.getString(NEW_APP_NAME, mFireBaseRemoteConfig.getString(NEW_APP_NAME));
+        String notificationText = mSharedPreferences.getString(NOTIFICATION_TEXT, mFireBaseRemoteConfig.getString(NOTIFICATION_TEXT));
+
+        Log.d("UpdateCheckService", "versionCode : " + versionCode);
+        Log.d("UpdateCheckService", "BuildConfig.VERSION_CODE : " + BuildConfig.VERSION_CODE);
+        Log.d("UpdateCheckService", "versionCode status preference : " + mSharedPreferences.getBoolean(versionCode, true));
+
+        Log.d("UpdateCheckService", "newAppPkgName : " + newAppPkgName);
+        Log.d("UpdateCheckService", "newAppIcon : " + newAppIcon);
+        Log.d("UpdateCheckService", "newAppName : " + newAppName);
+        Log.d("UpdateCheckService", "notificationText : " + notificationText);
+
+        long currentTime = System.currentTimeMillis();
+        long difference = currentTime - mSharedPreferences.getLong(NOTIFICATION_TIME, 0);
+
+        if (difference > (1000*24*60*60))
         {
-            Log.d("UpdateCheckService", "Update Available");
-            NotificationData data = new NotificationData();
-            data.action1IntentIcon = R.mipmap.install_grey;
-            data.action1IntentTag = NotificationActionReceiver.UPDATE_APP;
-            data.action1IntentText = "Install";
-            data.contentIntentTag = NotificationActionReceiver.UPDATE_APP;
-            data.contentText = "New version is available!";
-            data.contentTitle = "Location Alarm";
-            data.action2IntentIcon = R.mipmap.reject_grey;
-            data.action2IntentTag = NotificationActionReceiver.CANCEL_UPDATE;
-            data.action2IntentText = "Cancel";
-            data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_APP_UPDATE;
-            data.vibrate = true;
-            NotificationsUtil.showNotification(data);
-        }
-        else if (!mSharedPreferences.contains(newAppPkgName))
-        {
-            if (!isAppInstalled(newAppPkgName))
+            if (!(BuildConfig.VERSION_CODE + "").equals(versionCode) && mSharedPreferences.getBoolean(versionCode, true))
             {
-                Log.d("UpdateCheckService", "getNewAppPkgName : " + newAppPkgName);
+                Log.d("UpdateCheckService", "Update Available");
                 NotificationData data = new NotificationData();
                 data.action1IntentIcon = R.mipmap.install_grey;
                 data.action1IntentTag = NotificationActionReceiver.UPDATE_APP;
                 data.action1IntentText = "Install";
-
-                data.largeIconUrl = newAppIcon;
-                data.contentIntentTag = NotificationActionReceiver.UPDATE_APP;
-                data.contentTitle = newAppName;
-                data.contentText = notificationText;
-
+                data.contentText = "New version is available!";
+                data.contentTitle = "Location Alarm";
                 data.action2IntentIcon = R.mipmap.reject_grey;
                 data.action2IntentTag = NotificationActionReceiver.CANCEL_UPDATE;
                 data.action2IntentText = "Cancel";
                 data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_APP_UPDATE;
                 data.vibrate = true;
                 NotificationsUtil.showNotification(data);
+                //to update the status of installation, on action obtained from notification
+                mSharedPreferences.edit()
+                        .putLong(NOTIFICATION_TIME, currentTime)
+                        .putString(PACKAGE_NAME, versionCode)
+                        .apply();
+            }
+            else if (!mSharedPreferences.contains(newAppPkgName))
+            {
+                if (!isAppInstalled(newAppPkgName))
+                {
+                    Log.d("UpdateCheckService", "getNewAppPkgName : " + newAppPkgName);
+                    NotificationData data = new NotificationData();
+                    data.action1IntentIcon = R.mipmap.install_grey;
+                    data.action1IntentTag = NotificationActionReceiver.UPDATE_APP;
+                    data.action1IntentText = "Install";
+
+                    data.largeIconUrl = newAppIcon;
+                    data.contentIntentTag = NotificationActionReceiver.UPDATE_APP;
+                    data.contentTitle = newAppName;
+                    data.contentText = notificationText;
+
+                    data.action2IntentIcon = R.mipmap.reject_grey;
+                    data.action2IntentTag = NotificationActionReceiver.CANCEL_UPDATE;
+                    data.action2IntentText = "Cancel";
+                    data.notificationId = NotificationActionReceiver.NOTIFICATION_ID_APP_UPDATE;
+                    data.vibrate = true;
+                    NotificationsUtil.showNotification(data);
+                    mSharedPreferences.edit().putLong(NOTIFICATION_TIME, currentTime).apply();
+                }
             }
         }
-        mSharedPreferences.edit()
-                .putString(PACKAGE_NAME, newAppPkgName)
-                .putString(AD_UNIT_ID + "1", mFireBaseRemoteConfig.getString("adUnitId1"))
-                .putString(AD_UNIT_ID + "2", mFireBaseRemoteConfig.getString("adUnitId2"))
-                .putString(AD_UNIT_ID + "3", mFireBaseRemoteConfig.getString("adUnitId3"))
-                .apply();
-        stopSelf();
     }
 
     private boolean isAppInstalled(String uri)

@@ -32,7 +32,6 @@ public class PowerConnectionReceiver extends WakefulBroadcastReceiver
                 JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
                 JobInfo.Builder builder = new JobInfo.Builder(sJobId++, mServiceComponent);
                 builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);//when any network is available.
-                builder.setPersisted(true); //persist over reboot.
                 builder.setRequiresDeviceIdle(false); //when screen is off
                 builder.setRequiresCharging(false); // when phone is put for charging
                 scheduler.schedule(builder.build());

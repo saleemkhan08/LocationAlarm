@@ -8,5 +8,15 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="map_padding">20dp</dimen>
-    <dimen name="marker_padding">52.5dp</dimen>
+    <dimen name="marker_padding">32.5dp</dimen>
+    <dimen name="panelHeight">60dp</dimen>
+
+    <integer name="add_photo_x_offset">70</integer>
+    <integer name="add_photo_y_offset">150</integer>
+
+    <integer name="select_location_x_offset">190</integer>
+    <integer name="select_location_y_offset">-50</integer>
+
+    <integer name="set_radius_x_offset">6</integer>
+    <integer name="set_radius_y_offset">60</integer>
 </resources>

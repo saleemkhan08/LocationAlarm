@@ -21,7 +21,6 @@ import com.squareup.otto.Subscribe;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import co.thnki.locationalarm.fragments.LocationAlarmListFragment;
 import co.thnki.locationalarm.pojos.LocationAlarm;
 import co.thnki.locationalarm.receivers.InternetConnectivityListener;
 import co.thnki.locationalarm.services.AlarmAudioService;
@@ -119,7 +118,7 @@ public class AlarmActivity extends AppCompatActivity
         super.onDestroy();
         rippleBackground.stopRippleAnimation();
         Otto.post(AlarmAudioService.STOP_ALARM_AUDIO);
-        Otto.post(LocationAlarmListFragment.RELOAD_LIST);
+        Otto.post(MainActivity.RELOAD_LIST);
 
     }
 
@@ -129,7 +128,7 @@ public class AlarmActivity extends AppCompatActivity
         super.onBackPressed();
         rippleBackground.stopRippleAnimation();
         Otto.post(AlarmAudioService.STOP_ALARM_AUDIO);
-        Otto.post(LocationAlarmListFragment.RELOAD_LIST);
+        Otto.post(MainActivity.RELOAD_LIST);
     }
 
     @Subscribe

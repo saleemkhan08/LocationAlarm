@@ -24,11 +24,4 @@
         <include layout="@layout/ad_row"/>
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/locationAlarmList"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#eee"
-        android:paddingBottom="10dp"/>
-
 </LinearLayout>

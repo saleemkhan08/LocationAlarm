@@ -16,7 +16,6 @@ import java.util.List;
 import co.thnki.locationalarm.LocationAlarmApp;
 import co.thnki.locationalarm.MainActivity;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
-import co.thnki.locationalarm.fragments.LocationAlarmListFragment;
 import co.thnki.locationalarm.services.RemoteConfigService;
 import co.thnki.locationalarm.singletons.Otto;
 
@@ -47,7 +46,7 @@ public class NotificationActionReceiver extends BroadcastReceiver
             case CANCEL_ALL_ALARMS:
                 LocationAlarmDao.cancelAllAlarms();
                 notificationManager.cancel(NOTIFICATION_ID_LOCATION_ALARMS);
-                Otto.post(LocationAlarmListFragment.RELOAD_LIST);
+                Otto.post(MainActivity.RELOAD_LIST);
                 break;
 
             case MainActivity.TAG:

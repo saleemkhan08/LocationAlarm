@@ -15,9 +15,9 @@ import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 
+import co.thnki.locationalarm.MainActivity;
 import co.thnki.locationalarm.R;
 import co.thnki.locationalarm.doas.LocationAlarmDao;
-import co.thnki.locationalarm.fragments.LocationAlarmListFragment;
 import co.thnki.locationalarm.fragments.MapFragment;
 import co.thnki.locationalarm.pojos.LocationAlarm;
 import co.thnki.locationalarm.receivers.InternetConnectivityListener;
@@ -215,7 +215,7 @@ public class ExpressNativeAdAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     {
         if (alarmList.size() < 1)
         {
-            Otto.post(LocationAlarmListFragment.ALARM_LIST_EMPTY_TEXT);
+            Otto.post(MainActivity.ALARM_LIST_EMPTY_TEXT);
         }
         else
         {
