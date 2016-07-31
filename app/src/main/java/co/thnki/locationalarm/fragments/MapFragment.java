@@ -167,8 +167,8 @@ public class MapFragment extends SupportMapFragment implements
     private MarkerAndCirclesUtil mMarkerAndCircle;
     private Circle mActionCircle;
 
-    @BindString(R.string.unknownPlace)
-    String UNKNOWN_PLACE;
+    @BindString(R.string.slowInternet)
+    String SLOW_INTERNET;
 
     @BindDrawable(R.drawable.save_icon_alt)
     Drawable mSaveIcon;
@@ -346,10 +346,6 @@ public class MapFragment extends SupportMapFragment implements
         else
         {
             showSubmitButtonAndHideAddButton();
-            changeTravelModeState(false, false);
-            selectLocationHintToast();
-            setRadiusHintToast();
-            addPhotoHintToast();
         }
     }
 
@@ -429,6 +425,10 @@ public class MapFragment extends SupportMapFragment implements
             radiusSeekBarInnerWrapper.setVisibility(View.VISIBLE);
             mTitleBar.setVisibility(View.INVISIBLE);
             drawCircleOnMap();
+            changeTravelModeState(false, false);
+            selectLocationHintToast();
+            setRadiusHintToast();
+            addPhotoHintToast();
         }
         else
         {
@@ -774,7 +774,7 @@ public class MapFragment extends SupportMapFragment implements
                         break;
                     case PlaceAutocomplete.RESULT_ERROR:
                         Log.d("PlacesApi", "RESULT_ERROR : " + data);
-                        toast(UNKNOWN_PLACE);
+                        toast(SLOW_INTERNET);
                         break;
                     case Activity.RESULT_CANCELED:
                         Log.d("PlacesApi", "RESULT_CANCELED");
@@ -1020,7 +1020,7 @@ public class MapFragment extends SupportMapFragment implements
         Log.d("MapFragmentFlowLogs", "onAddressObtained");
         if (result == null)
         {
-            searchText.setText(UNKNOWN_PLACE);
+            searchText.setText(SLOW_INTERNET);
         }
         else
         {

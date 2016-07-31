@@ -7,7 +7,7 @@
 
     <string name="tapToViewList">Tap to view the list</string>
     <string name="noInternet">No Internet…</string>
-    <string name="unknownPlace">Unknown Place…</string>
+    <string name="slowInternet">Slow Internet…</string>
     <string name="alarmList">Alarm List</string>
     <string name="tapToViewMap">Swipe down to view the map</string>
     <string name="action_km">Kilometers</string>

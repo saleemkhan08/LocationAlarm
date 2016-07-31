@@ -79,7 +79,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:rb_color="@color/colorAccent"
-        app:rb_duration="1175"
+        app:rb_duration="1000"
         app:rb_radius="60dp"
         app:rb_rippleAmount="1"
         app:rb_scale="8">

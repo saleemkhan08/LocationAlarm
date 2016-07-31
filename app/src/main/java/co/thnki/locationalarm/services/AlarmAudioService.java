@@ -65,7 +65,7 @@ public class AlarmAudioService extends Service implements AudioManager.OnAudioFo
         mediaPlayer.start(); // no need to call prepare(); create() does that for you
         mediaPlayer.setLooping(true);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        long[] pattern = {0, 200, 975};
+        long[] pattern = {0, 200, 800};
         vibrator.vibrate(pattern, 0);
         Log.d("AlarmAudioService", "Granted");
 
